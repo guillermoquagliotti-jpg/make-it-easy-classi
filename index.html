@@ -234,6 +234,9 @@ textarea{resize:vertical;font-family:ui-monospace,Menlo,monospace;font-size:.8re
 .storia .st-r{margin:4px 0;padding-left:18px;font-size:.88rem}
 .storia .note{margin:6px 0 0}
 @media (max-width:560px){.storia .st-h{grid-template-columns:3em minmax(0,1fr)}.storia .st-h>.btn,.storia .st-h>.btns{grid-column:2}}
+.top-in{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.vai-app{flex:none;text-decoration:none;font-weight:700;font-size:.85rem;color:var(--accent-strong);background:var(--accent-soft);border-radius:999px;padding:8px 14px;white-space:nowrap}
+.vai-app:active{transform:scale(.97)}
 .titolo{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:1.4rem}
 .sezioni{max-width:100%;overflow-x:auto;flex-wrap:nowrap}
 .sezioni button{white-space:nowrap}
@@ -294,6 +297,17 @@ select.mese{width:auto;min-height:34px;padding:4px 8px;font-size:.8rem}
 .pdp-gri{border-collapse:collapse;font-size:.82rem;width:100%}
 .pdp-gri th,.pdp-gri td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left}
 .pdp-gri select{min-height:34px;padding:2px 6px;width:auto}
+.oggi-nav{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px}
+.oggi-t{text-align:center}.oggi-t h2{margin:0}
+.oggi-h .btns{justify-content:center;margin-top:6px}.oggi-h input[type=date]{width:auto}
+.oggi-ore{list-style:none;margin:0;padding:0}
+.oggi-ore .ora{display:grid;grid-template-columns:3.4em minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.oggi-ore .ora .t{font-variant-numeric:tabular-nums;font-weight:700;line-height:1.2}
+.oggi-ore .ora .w{display:flex;flex-direction:column;gap:2px;min-width:0}
+.oggi-ore .ora.altro .w b{color:var(--muted);font-weight:600}
+.oggi-ore .ora.sost{background:var(--accent-soft);border-radius:10px;padding-inline:8px}
+.oggi-det{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.wlist.fare li{grid-template-columns:minmax(0,1fr) auto}.wlist.fare .w{flex-direction:column;align-items:flex-start;gap:2px}
 </style></head>
 <body>
 <div id="app"></div>
@@ -345,10 +359,13 @@ if(!S||S.v!==1)S=seed();
 /* griglia: scala con più e meno (x, x+, x½, (x+1)-) */
 function etichetta(v){const i=Math.floor(v+1e-9),f=Math.round((v-i)*100);return f===0?String(i):f===25?i+'+':f===50?i+'½':(i+1)+'-'}
 function grigliaStd(){const g=[];for(let v=10;v>=2-1e-9;v-=0.25){const min=v===2?0:Math.max(0,Math.round((v*10-1.25)*100)/100);g.push({min,voto:etichetta(v)})}return g}
-function migra(x){if(!x.griglia)x.griglia=grigliaStd();if(!x.nomeCompletoDefault){x.soloIniziali=false;x.nomeCompletoDefault=1}if(x.scuola==null)x.scuola='';x.classi.forEach(c=>{c.verifiche=c.verifiche||[];c.prog=c.prog||{ann:{},mesi:{}}});return x}
+function migra(x){if(!x.griglia)x.griglia=grigliaStd();if(!x.nomeCompletoDefault){x.soloIniziali=false;x.nomeCompletoDefault=1}if(x.scuola==null)x.scuola='';x.classi.forEach(c=>{c.verifiche=c.verifiche||[];c.prog=c.prog||{ann:{},mesi:{}}});
+  if(!x.pulDup){x.pulDup=1;const vuota=c=>!c.alunni.length&&!c.agenda.length&&!c.argomenti.length&&!c.verifiche.length&&!(c.voti||[]).length&&!(c.dim||[]).length&&!Object.values(c.prog?.ann||{}).some(v=>String(v||'').trim());
+    x.classi=x.classi.filter(c=>!(!String(c.materia||'').trim()&&vuota(c)&&x.classi.some(o=>o!==c&&o.nome.trim().toLowerCase()===c.nome.trim().toLowerCase()&&o.ordine===c.ordine&&String(o.materia||'').trim())))}
+  return x}
 migra(S);
 function save(){S.mod=new Date().toISOString();lset(KEY,JSON.stringify(S));if(CLOUD.user&&CLOUD.key&&!CLOUD.scelta)pushLater()}
-const ui={ver:null,verEdit:false,classe:null,sez:'alunni',alunno:null,data:iso(new Date()),tab:'classi',conferma:null,proposta:null,copia:null,paste:false,importTxt:''};
+const ui={ver:null,verEdit:false,classe:null,sez:'alunni',alunno:null,data:iso(new Date()),tab:'oggi',conferma:null,proposta:null,copia:null,paste:false,importTxt:''};
 
 /* ---------- Logica ---------- */
 const classe=id=>S.classi.find(c=>c.id===id);
@@ -463,11 +480,19 @@ async function daSostituzioni(auto){
     else{const r=q.docs[0].data().membri?.[email];lista=r?.classi||null;if(!r?.docente)motivo='Nelle Sostituzioni la tua email non è collegata a un docente: chiedilo a chi le gestisce (Impostazioni → Persone).';else if(!lista||!lista.length)motivo='Nell\'orario delle Sostituzioni non risultano classi per te (oppure l\'amministratore non ha ancora aperto l\'app dopo l\'aggiornamento).'}}
   catch(e){motivo='Non riesco a leggere le Sostituzioni ('+(e.code||e.message)+').'}
   if(!lista||!lista.length){if(!auto)toast(motivo);return 0}
-  const k=c=>[c.nome,c.ordine,c.materia].map(x=>String(x||'').trim().toLowerCase()).join('|');const ci=new Set(S.classi.map(k));let n=0;
-  for(const c of lista){if(!ci.has(k(c))){S.classi.push(nuovaClasse(c.nome,c.ordine||'medie',c.materia||''));ci.add(k(c));n++}}
-  if(n){save();render()}
-  if(!auto||n)toast(n?`Aggiunt${n===1?'a 1 classe':'e '+n+' classi'} dalle Sostituzioni`:'Hai già tutte le classi delle Sostituzioni');
-  return n;
+  const nr=x=>String(x||'').trim().toLowerCase();const chiave=c=>[c.nome,c.ordine,c.materia].map(nr).join('|');const escl=new Set(S.sostEsclusi||[]);
+  const nuove=[];let fill=0;
+  for(const c of lista){if(escl.has(chiave(c)))continue;
+    const stesse=S.classi.filter(o=>nr(o.nome)===nr(c.nome)&&(o.ordine||'')===(c.ordine||'medie'));
+    if(!nr(c.materia)){if(stesse.length)continue}            // senza materia: basta che la classe ci sia già
+    else if(stesse.some(o=>nr(o.materia)===nr(c.materia)))continue;
+    else{const vuota=stesse.find(o=>!nr(o.materia));if(vuota){vuota.materia=c.materia;fill++;continue}}
+    if(!nuove.some(z=>chiave(z)===chiave(c)))nuove.push(c)}
+  if(fill)save();
+  if(!nuove.length){if(!auto)toast(fill?`Materia aggiunta a ${fill} ${fill===1?'classe':'classi'}`:'Hai già tutte le classi delle Sostituzioni');if(fill)render();return fill}
+  if(auto){nuove.forEach(c=>S.classi.push({...nuovaClasse(c.nome,c.ordine||'medie',c.materia||''),daSost:true}));save();render();return nuove.length}
+  ui.sostScelta=nuove;render();
+  const n=nuove.length;  return n;
 }
 function nuovoAnno(tieni){
   const piu=d=>d?(+d.slice(0,4)+1)+d.slice(4):d;
@@ -526,9 +551,10 @@ function render(){
   if(CLOUD.on&&!CLOUD.user){$app.innerHTML=vLogin();return}
   if(CLOUD.on&&!CLOUD.key){$app.innerHTML=vFrase();return}
   if(CLOUD.scelta){$app.innerHTML=vScelta();return}
-  $app.innerHTML=`<header class="top"><div class="top-in"><button class="brand" data-act="tab" data-v="imp" aria-label="Apri profilo">${avatarHTML()}<span><span class="eyebrow">Make it easy</span><span class="app">Classi</span><span class="hi">Ciao${S.profilo.nome?', '+esc(S.profilo.nome):''}${CLOUD.user?` · <span class="sync s-${CLOUD.stato}">${STATO[CLOUD.stato]||''}</span>`:''}</span></span></button></div>
-  <nav class="tabs" role="tablist">${[['classi','Classi'],['imp','Impostazioni']].map(([k,l])=>`<button role="tab" aria-selected="${ui.tab===k}" class="tab ${ui.tab===k?'on':''}" data-act="tab" data-v="${k}">${l}</button>`).join('')}</nav></header>
-  <main class="main">${ui.tab==='imp'?vImp():ui.classe?vClasse():vClassi()}</main>${ui.proposta?vProposta():''}${ui.copia?vCopia():''}`;
+  if(CLOUD.user&&CLOUD.key&&!CLOUD.sostTent){CLOUD.sostTent=true;setTimeout(caricaSost,0)}
+  $app.innerHTML=`<header class="top"><div class="top-in"><button class="brand" data-act="tab" data-v="imp" aria-label="Apri profilo">${avatarHTML()}<span><span class="eyebrow">Make it easy</span><span class="app">Classi</span><span class="hi">Ciao${S.profilo.nome?', '+esc(S.profilo.nome):''}${CLOUD.user?` · <span class="sync s-${CLOUD.stato}">${STATO[CLOUD.stato]||''}</span>`:''}</span></span></button>${CLOUD.user?vVaiApp():''}</div>
+  <nav class="tabs" role="tablist">${[['oggi','Oggi'],['classi','Classi'],['imp','Impostazioni']].map(([k,l])=>`<button role="tab" aria-selected="${ui.tab===k}" class="tab ${ui.tab===k?'on':''}" data-act="tab" data-v="${k}">${l}</button>`).join('')}</nav></header>
+  <main class="main">${ui.tab==='imp'?vImp():ui.tab==='oggi'?vOggi():ui.classe?vClasse():vClassi()}</main>${ui.proposta?vProposta():''}${ui.sostScelta?vSceltaSost():''}${ui.copia?vCopia():''}`;
   if(ui.copia){const t=document.getElementById('copyArea');t&&(t.focus(),t.select())}
 }
 function vLogin(){
@@ -556,6 +582,130 @@ function vScelta(){
   <div class="btns"><button class="btn primary" data-act="tieniOnline">Tieni i dati online</button><button class="btn" data-act="tieniLocale">Tieni quelli di questo dispositivo</button></div></section></main>`;
 }
 
+/* ---------- Collegamento con le Sostituzioni (orario, sostituzioni del giorno, indirizzo dell'altra app) ---------- */
+async function leggiScuola(){
+  const email=(CLOUD.user?.email||'').toLowerCase();
+  const q=await firebase.firestore().collection('scuole').where('emails','array-contains',email).limit(1).get();
+  if(q.empty)return null;const d=q.docs[0];return {sid:d.id,dati:d.data(),me:d.data().membri?.[email]||null};
+}
+async function caricaSost(){
+  try{const sc=await leggiScuola();
+    const nuovo=sc&&sc.me?.docente?{sid:sc.sid,docente:sc.me.docente,ore:sc.me.ore||[],urlSost:sc.dati.urlSost||''}:sc?{sid:sc.sid,docente:null,ore:[],urlSost:sc.dati.urlSost||''}:null;
+    if(JSON.stringify(nuovo)!==JSON.stringify(S.sost||null)){S.sost=nuovo;save()}
+    // chi gestisce la scuola apre Classi: le Sostituzioni imparano dove si trova
+    const qui=location.origin+location.pathname.replace(/index\.html$/,'');
+    if(sc&&sc.me?.ruolo==='admin'&&/^https:/.test(qui)&&sc.dati.urlClassi!==qui)firebase.firestore().collection('scuole').doc(sc.sid).update({urlClassi:qui}).catch(()=>{});
+    safeRender();
+  }catch(e){}
+}
+async function sostDelGiorno(d){
+  ui.sostG=ui.sostG||{};if(ui.sostG[d]!==undefined||!S.sost?.sid||!S.sost.docente)return;ui.sostG[d]=null;
+  try{const q=await firebase.firestore().collection('scuole').doc(S.sost.sid).collection('sostituzioni').where('data','==',d).get();
+    const L=[];q.forEach(x=>{const s=x.data();if(s.sostituto===S.sost.docente)L.push(s)});ui.sostG[d]=L}
+  catch(e){ui.sostG[d]=[]}
+  safeRender();
+}
+function urlAltra(){if(S.sost?.urlSost)return S.sost.urlSost;const b=location.pathname.replace(/[^/]*$/,'');return b.replace(/[^/]+\/$/,'')+'make-it-easy/'}
+function vVaiApp(){return `<a class="vai-app" href="${esc(urlAltra())}" title="Apri Make it easy – Sostituzioni">Sostituzioni ›</a>`}
+
+/* ---------- Oggi ---------- */
+const hmm=m=>`${Math.floor(m/60)}.${String(m%60).padStart(2,'0')}`;
+const norm=s=>String(s||'').trim().toLowerCase();
+const TIPO_ORA={D:'A disposizione',P:'Potenziamento',R:'Recupero ore',X:'Non spostabile'};
+function classeDiOra(o){return S.classi.find(c=>(o.classi||[]).some(n=>norm(n)===norm(c.nome))&&(!o.ordine||c.ordine===o.ordine)&&(!o.materia||!c.materia||norm(c.materia)===norm(o.materia)))}
+function daCorreggere(c,d){return c.verifiche.filter(v=>v.data<=d&&v.data>=iso(new Date(parseD(d)-45*864e5))).map(v=>{const pres=c.alunni.filter(a=>!(v.assenti||[]).includes(a.id));const manc=pres.filter(a=>!esito(v,a.id).completo).length;return {v,manc}}).filter(x=>x.manc>0&&x.v.esercizi?.length)}
+function vOggi(){
+  const d=ui.oggiData||iso(new Date());const g=parseD(d).getDay();const oggi=iso(new Date());
+  if(S.sost?.docente)sostDelGiorno(d);
+  const sost=(ui.sostG||{})[d]||[];
+  const ore=(S.sost?.ore||[]).filter(o=>o.g===g).map(o=>({...o,k:'o'})).concat(sost.map(s=>({k:'s',a:s.a,b:s.b,s}))).sort((x,y)=>x.a-y.a);
+  const giorno=parseD(d).toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'});
+  const sposta=n=>{const x=parseD(d);x.setDate(x.getDate()+n);if(x.getDay()===0)x.setDate(x.getDate()+(n>0?1:-1));return iso(x)};
+  let h=`<section class="block oggi-h"><div class="oggi-nav"><button class="btn sm ghost" data-act="oggiVai" data-v="${sposta(-1)}" aria-label="Giorno prima">‹</button>
+    <div class="oggi-t"><span class="eyebrow">${d===oggi?'Oggi':d===iso(new Date(Date.now()+864e5))?'Domani':''}</span><h2>${esc(giorno[0].toUpperCase()+giorno.slice(1))}</h2></div>
+    <button class="btn sm ghost" data-act="oggiVai" data-v="${sposta(1)}" aria-label="Giorno dopo">›</button></div>
+    <div class="btns"><input type="date" value="${d}" data-chg="oggiData" aria-label="Scegli il giorno">${d!==oggi?'<button class="link" data-act="oggiVai" data-v="">Torna a oggi</button>':''}</div></section>`;
+  // orario
+  h+=`<section class="block"><h2>Le tue ore</h2>`;
+  if(!S.sost||!S.sost.docente){h+=`<p class="muted sm">${S.sost?'Nelle Sostituzioni la tua email non è ancora collegata a un docente: chiedilo a chi le gestisce (Impostazioni → Persone). Poi qui vedrai il tuo orario e le sostituzioni.':'Il tuo orario arriva dalle Sostituzioni della scuola: la tua email non è nel loro elenco.'}</p>`}
+  else if(!ore.length)h+=`<p class="empty">Nessuna ora in orario${g===6||g===0?' (fine settimana)':''}.</p>`;
+  else{h+='<ul class="oggi-ore">';
+    for(const o of ore){
+      if(o.k==='s'){const s=o.s;h+=`<li class="ora sost"><span class="t">${hmm(s.a)}<br><span class="muted sm">${hmm(s.b)}</span></span><span class="w"><b>Sostituzione · ${esc(s.classe||'')}</b><span class="muted sm">al posto di ${esc(s.nA||'')}</span></span></li>`;continue}
+      const c=o.tipo==='L'?classeDiOra(o):null;const nome=(o.classi&&o.classi.length?o.classi.join(' + '):o.label);
+      let det='';
+      if(c){const comp=c.agenda.filter(x=>x.data===d);const soglia=c.alunni.filter(a=>contatore(c,a.id,d)>=S.soglia).length;
+        det=comp.map(x=>`<span class="tag ${x.tipo==='verifica'?'t-R':'t-D'}">${x.tipo==='verifica'?'Verifica':'Compiti da controllare'}: ${esc(x.testo)}</span>`).join('')+(soglia?`<span class="tag t-R">${soglia} da valutare (dimenticanze)</span>`:'')}
+      h+=`<li class="ora ${o.tipo!=='L'?'altro':''}"><span class="t">${hmm(o.a)}<br><span class="muted sm">${hmm(o.b)}</span></span><span class="w"><b>${esc(o.tipo==='L'?nome:(o.label||TIPO_ORA[o.tipo]||''))}</b><span class="muted sm">${esc([o.materia,o.tipo!=='L'?TIPO_ORA[o.tipo]:'',o.ordine&&o.tipo==='L'?ORDINI[o.ordine]:''].filter(Boolean).join(' · '))}</span>${det?`<span class="oggi-det">${det}</span>`:''}</span>
+        ${c?`<button class="btn sm" data-act="apri" data-v="${c.id}">Apri</button>`:''}</li>`}
+    h+='</ul>'}
+  h+='</section>';
+  // da fare in tutte le classi
+  const fare=[];
+  for(const c of S.classi){const nc=`${c.nome} ${ORDINI[c.ordine]||''}${c.materia?' · '+c.materia:''}`;
+    for(const x of c.agenda.filter(x=>x.data===d))fare.push({c,t:(x.tipo==='verifica'?'Verifica: ':'Controlla i compiti: ')+x.testo,nc});
+    const sog=c.alunni.filter(a=>contatore(c,a.id,d)>=S.soglia);if(sog.length)fare.push({c,t:`${sog.length===1?sog[0].nome+' ha':sog.length+' alunni hanno'} raggiunto ${S.soglia} dimenticanze: decidi se mettere il 5`,nc,warn:1});
+    for(const {v,manc} of daCorreggere(c,d))fare.push({c,t:`Da correggere: ${v.titolo} (${manc} ${manc===1?'scheda':'schede'} senza punteggio)`,nc,ver:v.id});}
+  const sc=scadenzeVicine().filter(x=>x.data>=d);
+  h+=`<section class="block"><h2>Da fare</h2>${fare.length||sc.length?`<ul class="wlist fare">${fare.map(f=>`<li><span class="w"><span class="${f.warn?'warn-t':''}">${esc(f.t)}</span><span class="muted sm">${esc(f.nc)}</span></span><button class="link sm" data-act="${f.ver?'apriVer':'apri'}" data-v="${f.c.id}" ${f.ver?`data-ver="${f.ver}"`:''}>Apri</button></li>`).join('')}
+    ${sc.map(x=>`<li><span class="w"><span>${x.tipo} ${esc(x.alunno)}: ${esc(x.cosa.toLowerCase())} entro ${dBreve(x.data)}</span><span class="muted sm">${esc(x.classe)}</span></span><button class="link sm" data-act="apriPiano" data-c="${x.cid}" data-v="${x.aid}">Apri</button></li>`).join('')}</ul>`:'<p class="empty">Niente in sospeso per questo giorno.</p>'}</section>`;
+  return h;
+}
+
+/* ---------- Note e colloqui con le famiglie ---------- */
+const TIPI_NOTA=[['colloquio','Colloquio con la famiglia'],['comportamento','Comportamento'],['altro','Altro']];
+function vNote(c,a){
+  const L=[...(a.note||[])].sort((x,y)=>y.data.localeCompare(x.data));
+  return `<section class="block"><h2>Note e colloqui</h2>
+  <div class="form"><div class="row2"><div><label class="lbl" for="ntTipo">Tipo</label><select id="ntTipo">${TIPI_NOTA.map(([k,l])=>`<option value="${k}" ${ui.ntTipo===k?'selected':''}>${l}</option>`).join('')}</select></div>
+  <div><label class="lbl" for="ntData">Data</label><input type="date" id="ntData" value="${iso(new Date())}"></div></div>
+  <textarea id="ntTesto" rows="2" placeholder="Es. Colloquio con la madre: concordato il controllo del diario ogni sera"></textarea>
+  <div class="btns"><button class="btn" data-act="addNota">Aggiungi</button></div></div>
+  ${L.length?`<ul class="wlist">${L.map(n=>`<li><span class="t">${dBreve(n.data)}</span><span class="w"><span class="tag ${n.tipo==='colloquio'?'t-P':n.tipo==='comportamento'?'t-R':''}">${esc((TIPI_NOTA.find(t=>t[0]===n.tipo)||['','Nota'])[1])}</span><span>${esc(n.testo)}</span></span><button class="icon" data-act="rmNota" data-v="${n.id}" aria-label="Elimina">×</button></li>`).join('')}</ul>`:'<p class="empty sm">Nessuna nota.</p>'}
+</section>`;
+}
+
+/* ---------- Relazione finale ---------- */
+const RF=[['situazione','Situazione finale della classe'],['obiettivi','Obiettivi raggiunti'],['contenuti','Contenuti svolti'],['nonsvolti','Contenuti non svolti e motivazioni'],['metodi','Metodologie e strumenti'],['verifiche','Verifiche e valutazione'],['inclusione','Inclusione (BES, DSA, disabilità)'],['famiglie','Rapporti con le famiglie'],['note','Note']];
+function votoNum(v){const m=String(v||'').trim().match(/^(\d+(?:[.,]\d+)?)\s*(\+|-|½|\.5)?$/);if(!m)return null;let n=parseFloat(m[1].replace(',','.'));if(m[2]==='+')n+=.25;else if(m[2]==='-')n-=.25;else if(m[2])n+=.5;return n}
+function rfBozza(c,k){
+  const n=c.alunni.length;const ver=c.verifiche.slice().sort((a,b)=>a.data.localeCompare(b.data)).map(v=>{const res=c.alunni.filter(a=>!(v.assenti||[]).includes(a.id)).map(a=>esito(v,a.id)).filter(x=>x.completo);return {v,n:res.length,media:res.length?votoDa(res.reduce((t,x)=>t+x.pct,0)/res.length):null}});
+  if(k==='situazione'){
+    const medie=c.alunni.map(a=>{const vs=c.voti.filter(v=>v.alunno===a.id).map(v=>votoNum(v.voto)).filter(x=>x!=null);return vs.length?vs.reduce((t,x)=>t+x,0)/vs.length:null}).filter(x=>x!=null);
+    const alte=medie.filter(x=>x>=8).length,mid=medie.filter(x=>x>=6&&x<8).length,basse=medie.filter(x=>x<6).length;
+    let t=`La classe ${c.nome} è composta da ${n||'…'} alunni.`;
+    if(medie.length)t+=` In base ai voti dell'anno, ${alte} ${alte===1?'alunno ha':'alunni hanno'} raggiunto risultati buoni o ottimi, ${mid} sufficienti o discreti e ${basse} non sufficienti.`;
+    const dim=c.dim.length;if(dim)t+=` Nel corso dell'anno sono stati segnalati ${dim} compiti non svolti.`;
+    return t+`\nIl comportamento e la partecipazione sono stati … (completa: clima, impegno, autonomia, progressi rispetto alla situazione di partenza).`}
+  if(k==='obiettivi'){const o=(c.prog?.ann?.obiettivi||'').trim();return (o?'Obiettivi fissati nella programmazione:\n'+o+'\n\n':'')+'Gli obiettivi sono stati raggiunti in modo … dalla maggior parte della classe (completa).'}
+  if(k==='contenuti'){const f=c.argomenti.filter(a=>a.fatto);return f.length?f.map(a=>'- '+a.testo).join('\n'):''}
+  if(k==='nonsvolti'){const f=c.argomenti.filter(a=>!a.fatto);return f.length?f.map(a=>'- '+a.testo).join('\n')+'\nMotivazione: …':'Tutti gli argomenti previsti sono stati svolti.'}
+  if(k==='metodi'){const a=c.prog?.ann||{};return [a.metodologie,a.strumenti].filter(x=>x&&x.trim()).join('\n')}
+  if(k==='verifiche'){if(!ver.length)return '';return (ver.length===1?'È stata svolta 1 verifica:\n':`Sono state svolte ${ver.length} verifiche:\n`)+ver.map(x=>`- ${x.v.titolo} (${dBreve(x.v.data)})${x.media?`: media della classe ${x.media}`:''}`).join('\n')+'\nLa valutazione ha seguito la griglia in decimi adottata, con verifiche ridotte o semplificate per gli alunni con PDP o PEI.'}
+  if(k==='inclusione'){const p=c.alunni.filter(a=>a.piano);if(!p.length)return 'Nella classe non sono presenti alunni con PDP o PEI.';
+    const np=p.filter(a=>a.piano.tipo==='PDP').length,ne=p.length-np;const mis=new Set();p.forEach(a=>['comp','disp','val'].forEach(g=>voci(a.piano,g).forEach(v=>mis.add(v))));
+    return `Nella classe ${np?np+(np===1?' alunno ha un PDP':' alunni hanno un PDP'):''}${np&&ne?' e ':''}${ne?ne+(ne===1?' alunno ha un PEI':' alunni hanno un PEI'):''}. Sono state applicate le misure previste nei piani${mis.size?', in particolare:\n'+[...mis].map(v=>'- '+v[0].toUpperCase()+v.slice(1)).join('\n'):'.'}`}
+  if(k==='famiglie'){const col=c.alunni.reduce((t,a)=>t+(a.note||[]).filter(n=>n.tipo==='colloquio').length,0);return col?`Nel corso dell'anno ${col===1?'si è svolto 1 colloquio':'si sono svolti '+col+' colloqui'} con le famiglie. I rapporti sono stati … (completa).`:'I rapporti con le famiglie sono stati … (completa).'}
+  return '';
+}
+function vFinale(c){
+  const f=c.prog.fin=c.prog.fin||{};
+  let h=`<p class="muted sm">Relazione finale ${annoLabel()}. “Usa la bozza” scrive un testo con i dati dell'app (argomenti, verifiche, voti, piani, colloqui): rileggilo e completalo. Nel Word non ci sono nomi di alunni.</p>`;
+  for(const [k,l] of RF){const v=f[k]??'';const b=rfBozza(c,k);
+    h+=`<section class="block"><div class="block-h"><h2>${l}</h2>${b?(v.trim()?(ui.conferma==='rf:'+k?`<span class="btns"><button class="link bad" data-act="rfBozza" data-k="${k}">Sì, sostituisci</button><button class="link" data-act="conf" data-v="">No</button></span>`:`<button class="link" data-act="conf" data-v="rf:${k}">Rifai dalla bozza</button>`):`<button class="link" data-act="rfBozza" data-k="${k}">Usa la bozza</button>`):''}</div>
+    <textarea class="prog" rows="5" data-chg="progT" data-f="1" data-k="${k}" placeholder="${esc((b||'').split('\n')[0])}" aria-label="${l}">${esc(v)}</textarea></section>`}
+  return h+`<section class="block export"><div class="btns"><button class="btn primary" data-act="wordFin">Scarica in Word</button><button class="btn" data-act="rfTutte">Usa la bozza dove è vuoto</button></div></section>`;
+}
+function wordFinale(c){
+  const f=c.prog.fin||{};let x=par(`Relazione finale di ${c.materia||''}`,'Title')+intest(c);
+  for(const [k,l] of RF){const v=(f[k]||'').trim();if(k==='note'&&!v)continue;x+=par(l,'Heading1')+testo(v||'')}
+  docx(fileNome('Relazione finale',c),x);
+}
+
+function vSceltaSost(){const L=ui.sostScelta;return `<div class="sheet" role="dialog" aria-label="Classi dalle Sostituzioni"><div class="sheet-in"><h2>Classi trovate nell'orario</h2>
+  <p class="muted sm">Spunta quelle che vuoi aggiungere. Quelle che lasci senza spunta non te le riproporrò.</p>
+  <div class="checks">${L.map((c,i)=>`<label class="chk"><input type="checkbox" class="sc-chk" value="${i}" checked> ${esc(c.nome)} ${esc(ORDINI[c.ordine]||'')}${c.materia?' · '+esc(c.materia):' · <span class="muted">materia da scrivere</span>'}</label>`).join('')}</div>
+  <div class="btns"><button class="btn primary" data-act="scOk">Aggiungi</button><button class="btn ghost" data-act="scNo">Annulla</button></div></div></div>`}
 function vClassi(){
   const oggi=ui.data;
   const sc=scadenzeVicine();
@@ -613,6 +763,7 @@ function vAlunno(c){
   <p class="muted sm">${S.quad.map(Q=>`${esc(Q.nome)}: ${c.dim.filter(d=>d.alunno===a.id&&d.data>=Q.da&&d.data<=Q.a).length} dimenticanze`).join(' · ')}</p></section>
   <section class="block"><h2>Compiti dimenticati</h2>${dims.length?`<ul class="wlist">${dims.map(d=>`<li><span class="t">${dBreve(d.data)}</span><span class="w muted sm">${d.voto?'→ 5 proposto':''}</span><button class="icon" data-act="rmDim" data-v="${d.id}" aria-label="Elimina">×</button></li>`).join('')}</ul>`:'<p class="empty sm">Nessuna.</p>'}</section>
   <section class="block"><h2>Voti</h2>${voti.length?`<ul class="wlist">${voti.map(v=>`<li><span class="t">${dBreve(v.data)}</span><span class="w"><b class="voto">${esc(v.voto)}</b><span class="muted sm">${esc(v.motivo||'')}</span></span><button class="icon" data-act="rmVoto" data-v="${v.id}" aria-label="Elimina">×</button></li>`).join('')}</ul>`:'<p class="empty sm">Nessun voto.</p>'}</section>
+  ${vNote(c,a)}
   <section class="block danger">${ui.conferma==='rmAlunno'?`<p>Eliminare ${esc(a.nome)} con dimenticanze e voti?</p><div class="btns"><button class="btn bad" data-act="rmAlunno">Elimina</button><button class="btn ghost" data-act="conf" data-v="">Annulla</button></div>`:`<button class="link bad" data-act="conf" data-v="rmAlunno">Elimina alunno</button>`}</section>`;
 }
 
@@ -1258,7 +1409,8 @@ function datiMese(c,m){
 }
 function vProg(c){
   const vista=ui.progVista||'ann';
-  let h=`<div class="seg">${[['ann','Annuale'],['mese','Mensile']].map(([k,l])=>`<button class="${vista===k?'on':''}" data-act="progVista" data-v="${k}">${l}</button>`).join('')}</div>`;
+  let h=`<div class="seg">${[['ann','Annuale'],['mese','Mensile'],['fin','Relazione finale']].map(([k,l])=>`<button class="${vista===k?'on':''}" data-act="progVista" data-v="${k}">${l}</button>`).join('')}</div>`;
+  if(vista==='fin')return h+vFinale(c);
   if(vista==='ann'){
     h+=`<p class="muted sm">Programmazione annuale ${annoLabel()}. Le parti vuote hanno una bozza da cui partire: riscrivila come vuoi. Si salva da sola.</p>`;
     for(const [k,l] of SEZ){
@@ -1461,15 +1613,27 @@ document.addEventListener('click',e=>{
   const b=e.target.closest('[data-act]');if(!b||b.disabled)return;
   const A=b.dataset.act,v=b.dataset.v;const c=ui.classe&&classe(ui.classe);
   switch(A){
-    case 'tab':ui.tab=v;ui.conferma=null;if(v==='classi'){ui.classe=null;ui.alunno=null}window.scrollTo(0,0);break;
-    case 'apri':ui.classe=v;ui.sez='alunni';ui.alunno=null;ui.paste=false;window.scrollTo(0,0);break;
+    case 'tab':ui.tab=v;ui.conferma=null;if(v==='classi'||v==='oggi'){ui.classe=null;ui.alunno=null;ui.ver=null}if(v==='oggi')ui.sostG={};window.scrollTo(0,0);break;
+    case 'apri':ui.tab='classi';ui.classe=v;ui.sez='alunni';ui.alunno=null;ui.paste=false;window.scrollTo(0,0);break;
     case 'indietro':ui.classe=null;ui.alunno=null;break;
     case 'sez':ui.sez=v;ui.alunno=null;ui.piano=null;ui.ver=null;break;
     case 'conf':ui.conferma=v||null;break;
     case 'daSost':daSostituzioni(false);return;
+    case 'scNo':ui.sostScelta=null;break;
+    case 'scOk':{const L=ui.sostScelta||[];const sel=new Set([...document.querySelectorAll('.sc-chk:checked')].map(x=>+x.value));const k=c=>[c.nome,c.ordine,c.materia].map(x=>String(x||'').trim().toLowerCase()).join('|');
+      S.sostEsclusi=S.sostEsclusi||[];let n=0;L.forEach((c,i)=>{if(sel.has(i)){S.classi.push({...nuovaClasse(c.nome,c.ordine||'medie',c.materia||''),daSost:true});n++}else S.sostEsclusi.push(k(c))});
+      ui.sostScelta=null;save();toast(n?`Aggiunt${n===1?'a 1 classe':'e '+n+' classi'}`:'Nessuna classe aggiunta');break}
+    case 'oggiVai':ui.oggiData=v||null;break;
+    case 'apriVer':ui.tab='classi';ui.classe=v;ui.sez='verifiche';ui.ver=b.dataset.ver;ui.alunno=null;window.scrollTo(0,0);break;
+    case 'addNota':{const a=c.alunni.find(x=>x.id===ui.alunno);const t=val('ntTesto').trim();if(!t){toast('Scrivi la nota');return}ui.ntTipo=val('ntTipo');
+      (a.note=a.note||[]).push({id:uid(),tipo:ui.ntTipo||'altro',data:val('ntData')||iso(new Date()),testo:t});save();toast('Nota salvata');break}
+    case 'rmNota':{const a=c.alunni.find(x=>x.id===ui.alunno);a.note=(a.note||[]).filter(n=>n.id!==v);save();break}
+    case 'rfBozza':{const k=b.dataset.k;c.prog.fin=c.prog.fin||{};c.prog.fin[k]=rfBozza(c,k);ui.conferma=null;save();break}
+    case 'rfTutte':{c.prog.fin=c.prog.fin||{};let n=0;for(const [k] of RF){if(!(c.prog.fin[k]||'').trim()){const b2=rfBozza(c,k);if(b2){c.prog.fin[k]=b2;n++}}}save();toast(n?`Bozza scritta in ${n} sezioni`:'Le sezioni sono già compilate');break}
+    case 'wordFin':wordFinale(c);return;
     case 'addClasse':{const n=val('ncNome').trim();if(!n){toast('Scrivi il nome della classe');return}
       S.classi.push({id:uid(),nome:n,ordine:val('ncOrd'),materia:val('ncMat').trim(),alunni:[],agenda:[],dim:[],voti:[],argomenti:[],verifiche:[]});ui.conferma=null;save();break}
-    case 'rmClasse':S.classi=S.classi.filter(x=>x.id!==v);ui.conferma=null;save();break;
+    case 'rmClasse':{const c0=S.classi.find(x=>x.id===v);if(c0){S.sostEsclusi=S.sostEsclusi||[];S.sostEsclusi.push([c0.nome,c0.ordine,c0.materia].map(x=>String(x||'').trim().toLowerCase()).join('|'))}}S.classi=S.classi.filter(x=>x.id!==v);ui.conferma=null;save();break;
     case 'paste':ui.paste=v==='1';break;
     case 'addAlunni':{const nomi=puliscoNomi(val('paste'));if(!nomi.length){toast('Non trovo nomi nel testo incollato');return}
       const gia=new Set(c.alunni.map(a=>a.nome.toLowerCase()));let n=0;
@@ -1591,7 +1755,8 @@ document.addEventListener('change',e=>{
     case 'ossWord':ui.ossWord=t.checked;return;
     case 'pScuola':S.scuola=t.value.trim();save();return;
     case 'argMese':{const a=c.argomenti.find(x=>x.id===t.dataset.v);if(a){a.mese=t.value||null;save()}return}
-    case 'progT':{const k=t.dataset.k,m=t.dataset.m;if(m){c.prog.mesi[m]=c.prog.mesi[m]||{};c.prog.mesi[m][k]=t.value}else c.prog.ann[k]=t.value;save();return}
+    case 'oggiData':if(t.value){ui.oggiData=t.value}break;
+    case 'progT':{const k=t.dataset.k,m=t.dataset.m;if(t.dataset.f){c.prog.fin=c.prog.fin||{};c.prog.fin[k]=t.value;save();return}if(m){c.prog.mesi[m]=c.prog.mesi[m]||{};c.prog.mesi[m][k]=t.value}else c.prog.ann[k]=t.value;save();return}
     case 'progMese':ui.progMese=t.value;break;
     case 'pNome':S.profilo.nome=t.value.trim();save();break;
     case 'pCol':S.profilo.accento=t.value;save();break;
