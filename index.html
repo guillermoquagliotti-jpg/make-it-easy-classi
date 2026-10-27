@@ -223,6 +223,17 @@ textarea{resize:vertical;font-family:ui-monospace,Menlo,monospace;font-size:.8re
 .tabellone li.mia{background:var(--accent-soft);border-radius:8px;padding-inline:8px}
 .passi{white-space:pre-wrap;font-size:.72rem;color:var(--muted);margin:0;padding-bottom:10px;overflow-wrap:anywhere}
 .ok-t{color:var(--ok)}
+.storia{list-style:none;margin:0;padding:0}
+.storia .st-g{font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;padding:14px 0 4px}
+.storia .st{border-bottom:1px solid var(--line);padding:8px 0}
+.storia .st-h{display:grid;grid-template-columns:3.2em minmax(0,1fr) auto;gap:10px;align-items:center}
+.storia .st-h .t{font-variant-numeric:tabular-nums;font-weight:700}
+.storia .st-w{display:flex;flex-direction:column;gap:2px;min-width:0;overflow-wrap:anywhere}
+.storia .st-off .st-w b{text-decoration:line-through;color:var(--muted)}
+.storia details{margin:4px 0 0 calc(3.2em + 10px)}
+.storia .st-r{margin:4px 0;padding-left:18px;font-size:.88rem}
+.storia .note{margin:6px 0 0}
+@media (max-width:560px){.storia .st-h{grid-template-columns:3em minmax(0,1fr)}.storia .st-h>.btn,.storia .st-h>.btns{grid-column:2}}
 .titolo{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:1.4rem}
 .sezioni{max-width:100%;overflow-x:auto;flex-wrap:nowrap}
 .sezioni button{white-space:nowrap}
@@ -280,6 +291,9 @@ select.mese{width:auto;min-height:34px;padding:4px 8px;font-size:.8rem}
 .pei-or td{min-width:92px;text-align:left}
 .pei-or .or-m{width:100%;min-height:30px;padding:2px 4px;font-size:.78rem;margin-bottom:2px}
 .pei-or .or-c{display:flex;gap:6px}
+.pdp-gri{border-collapse:collapse;font-size:.82rem;width:100%}
+.pdp-gri th,.pdp-gri td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left}
+.pdp-gri select{min-height:34px;padding:2px 6px;width:auto}
 </style></head>
 <body>
 <div id="app"></div>
@@ -694,14 +708,15 @@ function persMia(p){const L=[];if(p.obiettivi.trim())L.push('Obiettivi: '+p.obie
   for(const g of ['comp','disp','val']){const v=voci(p,g);if(v.length)L.push(PCHK[g][0]+': '+v.join('; ')+'.')}return L.join('\n')}
 const miaScelta=p=>pm(p).mia||(persMia(p)?'B':'A');
 function compilati(p,campi){const m=pm(p);let n=0;
-  for(const f of campi){const [t,k]=f;
+  for(const f of campi){const [t,k]=f;if(CONTA_EXTRA[t]){n+=CONTA_EXTRA[t](p,f);continue}
     if(t==='L')n+=(m[k]||[]).filter(r=>Object.values(r).some(x=>String(x||'').trim())).length;
     else if(t==='OR')n+=Object.keys(m).filter(x=>x.startsWith('or_')&&m[x]).length?1:0;
     else if(t==='DIS')n+=(m.mia||persMia(p)?1:0)+(m.dis||[]).filter(r=>Object.values(r).some(x=>String(x||'').trim())).length;
     else if(!['h','p'].includes(t)&&m[k]!=null&&String(m[k]).trim()!==''&&m[k]!==false)n++}
   return n}
 function peiCampo(p,f){
-  const m=pm(p);const [t,k,l,o]=f;const v=m[k];const id='pf_'+k;
+  if(CAMPI_EXTRA[f[0]])return CAMPI_EXTRA[f[0]](p,f);
+  const m=pm(p);const [t,k,l,o]=f;const v=t==='c'?valC(p,k):m[k];const id='pf_'+k;
   switch(t){
     case 'h':return `<h3 class="pei-h">${esc(k)}</h3>`;
     case 'p':return `<p class="muted sm">${esc(k)}</p>`;
@@ -737,7 +752,7 @@ const IMG_PEI={header:"iVBORw0KGgoAAAANSUhEUgAABdwAAALFCAAAAAD8IH5lAAEAAElEQVR42
 /* Word del PEI: impaginazione della scuola (modello A3 come lo usa la scuola) */
 const wR=(t,o={})=>`<w:r><w:rPr>${o.font?`<w:rFonts w:ascii="${o.font}" w:hAnsi="${o.font}" w:cs="${o.font}"/>`:''}${o.b?'<w:b/>':''}${o.i?'<w:i/>':''}${o.u?'<w:u w:val="single"/>':''}${o.caps?'<w:smallCaps/>':''}${o.col?`<w:color w:val="${o.col}"/>`:''}${o.sz?`<w:sz w:val="${o.sz}"/><w:szCs w:val="${o.sz}"/>`:''}</w:rPr><w:t xml:space="preserve">${xe(t)}</w:t></w:r>`;
 const wP=(x,o={})=>`<w:p><w:pPr>${o.pb?'<w:pageBreakBefore/>':''}${o.keep?'<w:keepNext/>':''}${o.line?'<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="000000"/></w:pBdr>':''}<w:spacing w:before="${o.bef||0}" w:after="${o.aft??60}"/>${o.ind?`<w:ind w:left="${o.ind}"/>`:''}${o.al?`<w:jc w:val="${o.al}"/>`:''}</w:pPr>${Array.isArray(x)?x.join(''):x===''?'':String(x).startsWith('<w:r>')?x:wR(x,o)}</w:p>`;
-const wC=(x,w,o={})=>`<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${o.span?`<w:gridSpan w:val="${o.span}"/>`:''}${o.fill?`<w:shd w:val="clear" w:color="auto" w:fill="${o.fill}"/>`:''}${o.vc?'<w:vAlign w:val="center"/>':''}</w:tcPr>${x||wP('')}</w:tc>`;
+const wC=(x,w,o={})=>`<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${o.span?`<w:gridSpan w:val="${o.span}"/>`:''}${o.vm?`<w:vMerge${o.vm==='restart'?' w:val="restart"':''}/>`:''}${o.fill?`<w:shd w:val="clear" w:color="auto" w:fill="${o.fill}"/>`:''}${o.vc?'<w:vAlign w:val="center"/>':''}</w:tcPr>${x||wP('')}</w:tc>`;
 const wT=(ws,rows,o={})=>{const bd=['top','left','bottom','right','insideH','insideV'].map(s=>`<w:${s} w:val="single" w:sz="4" w:space="0" w:color="${o.col||'808080'}"/>`).join('');
   return `<w:tbl><w:tblPr><w:tblW w:w="${ws.reduce((a,b)=>a+b,0)}" w:type="dxa"/>${o.center?'<w:jc w:val="center"/>':''}<w:tblBorders>${bd}</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="40" w:type="dxa"/><w:left w:w="90" w:type="dxa"/><w:bottom w:w="40" w:type="dxa"/><w:right w:w="90" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${ws.map(w=>`<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>${rows.map(r=>`<w:tr>${r.join('')}</w:tr>`).join('')}</w:tbl>`+wP('',{aft:o.dopo??160})};
 const wImg=(rid,n,cxCm,cyCm)=>{const E=v=>Math.round(v*360000);return `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${E(cxCm)}" cy="${E(cyCm)}"/><wp:docPr id="${n}" name="Immagine ${n}"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="${n}" name="img${n}.png"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="${rid}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${E(cxCm)}" cy="${E(cyCm)}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`};
@@ -909,6 +924,237 @@ function wordPEI(c,a){
   return docx(`PEI ${c.nome} ${nomeDoc(a)}`.replace(/\s+/g,' ').trim().replace(/[\/:*?"<>|.]/g,'')+'.docx',x,{font:'Times New Roman',sz:24,media:[['rIdImg1',IMG_PEI.header],['rIdImg2',IMG_PEI.gears]]});
 }
 
+/* ---------- PDP: modello regionale Piemonte (All. 1, senza ICF) ---------- */
+const CAMPI_EXTRA={},CONTA_EXTRA={},DEF_C={};
+const opz=a=>a.map((x,i)=>[String(i),x]);
+const B1=[
+  ['LETTURA','dLet',[['vel','VELOCITÀ',['Molto lenta','Lenta','Scorrevole']],['cor','CORRETTEZZA',['Adeguata','Non adeguata (ad esempio confonde/inverte/sostituisce omette lettere o sillabe)']],['com','COMPRENSIONE',['Scarsa','Essenziale','Globale','Completa-analitica']]]],
+  ['SCRITTURA','dScr',[['dett','SOTTO DETTATURA',['Corretta','Poco corretta','Scorretta']],['err','SOTTO DETTATURA – Tipologia errori',['Fonologici','Non fonologici','Fonetici'],1],
+    ['ade','PRODUZIONE AUTONOMA – Aderenza consegna',['Spesso','Talvolta','Mai']],['mor','PRODUZIONE AUTONOMA – Corretta struttura morfo-sintattica',['Spesso','Talvolta','Mai']],['tes','PRODUZIONE AUTONOMA – Corretta struttura testuale (narrativo, descrittivo, regolativo …)',['Spesso','Talvolta','Mai']],
+    ['ort','PRODUZIONE AUTONOMA – Correttezza ortografica',['Adeguata','Parziale','Non adeguata']],['pun','PRODUZIONE AUTONOMA – Uso punteggiatura',['Adeguata','Parziale','Non adeguata']]]],
+  ['GRAFIA','dGra',[['leg','LEGGIBILE',['Sì','Poco','No']],['tra','TRATTO',['Premuto','Leggero','Ripassato','Incerto']]]],
+  ['CALCOLO','dCal',[['vis','Difficoltà visuospaziali (es: quantificazione automatizzata)',['spesso','talvolta','mai']],['fat','Recupero di fatti numerici (es: tabelline)',['raggiunto','parziale','non raggiunto']],['alg','Automatizzazione dell\'algoritmo procedurale',['raggiunto','parziale','non raggiunto']],
+    ['pro','Errori di processamento numerico (negli aspetti cardinali e ordinali e nella corrispondenza tra numero e quantità)',['spesso','talvolta','mai']],['bas','Uso degli algoritmi di base del calcolo (scritto e a mente)',['adeguata','parziale','non adeguato']],['pbs','Capacità di problem solving',['adeguata','parziale','non adeguata']],['ctp','Comprensione del testo di un problema',['adeguata','parziale','non adeguata']]]]];
+const B1b=[
+  ['PROPRIETÀ LINGUISTICA','dLin',[['lin','',['difficoltà nella strutturazione della frase','difficoltà nel reperimento lessicale','difficoltà nell\'esposizione orale'],1]]],
+  ['MEMORIA','dMem',[['mem','Difficoltà nel memorizzare:',['categorizzazioni','formule, strutture grammaticali, algoritmi (tabelline, nomi, date …)','sequenze e procedure'],1]]],
+  ['ATTENZIONE','dAtt',[['att','',['attenzione visuo-spaziale','selettiva','intensiva'],1]]],
+  ['AFFATICABILITÀ','dAff',[['aff','',['Sì','poco','No']]]],
+  ['PRASSIE','dPra',[['pra','',['difficoltà di esecuzione','difficoltà di pianificazione','difficoltà di programmazione e progettazione'],1]]]];
+const GRI=['Manifesta difficoltà di **lettura/scrittura**','Manifesta difficoltà di **espressione orale**','Manifesta difficoltà **logico/matematiche**','Manifesta difficoltà nel **rispetto delle regole**','Manifesta difficoltà nel **mantenere l\'attenzione** durante le **spiegazioni**','Non svolge regolarmente i **compiti a casa**','Non esegue le **consegne** che gli vengono proposte **in classe**','Manifesta **difficoltà** nella **comprensione** delle **consegne** proposte','Fa **domande non pertinenti** all\'insegnante/educatore','**Disturba** lo svolgimento delle **lezioni** (distrae i compagni, ecc.)','Non presta attenzione ai **richiami dell\'insegnante/educatore**','Manifesta **difficoltà** a **stare fermo nel proprio banco**','**Si fa distrarre** dai compagni','Manifesta **timidezza**','Viene **escluso** dai compagni dalle **attività scolastiche**','Viene **escluso** dai compagni dalle **attività di gioco**','Tende ad **autoescludersi** dalle **attività scolastiche**','Tende ad **autoescludersi** dalle **attività di gioco/ricreative**','Non **porta** a scuola i **materiali** necessari alle attività scolastiche','Ha **scarsa cura** dei **materiali** per le attività scolastiche (propri e della scuola)','Dimostra **scarsa fiducia nelle proprie capacità**'];
+const MAL=[['FS','Famiglia e Studente',[['Va volentieri a scuola?','SI NO ABB.'],['Da quanto tempo non frequenta la scuola?',''],['E\' interessato allo studio?','SI NO ABB.'],['Comportamenti o episodi particolari da segnalare','Si No Quali?'],['Quali sono le maggiori difficoltà che incontra in relazione alla malattia?',''],['Quali sono i suoi punti di forza? Quali gli interessi?',''],['E\' un migrante di passaggio?','Si No'],['Che cosa è importante sapere?',''],['E\' stata attivata l\'istruzione domiciliare? Per quante ore/settimana?','Si No Ore…'],['Altro','']]],
+  ['DA','Docenti della scuola di appartenenza',[['Va volentieri a scuola?','SI NO ABB.'],['Da quanto tempo non frequenta la scuola?',''],['Frequenta regolarmente','SI NO'],['Come è il profitto scolastico?','Buono Sufficiente Scarso'],['E\' interessato allo studio?','Si No'],['Comportamenti o episodi particolari da segnalare','Si No Quali?'],['I genitori sono collaborativi? In che senso?',''],['Prima della malattia, aveva difficoltà particolari?','Si No Quali?'],['Quali sono i suoi punti di forza? E quali gli interessi?',''],['Come sono le relazioni con i compagni?',''],['E\' abituato/a a studiare con qualche compagno?','Si No Chi?'],['Altro:','']]],
+  ['DO','Docenti della scuola in ospedale',[['E\' interessato allo studio?','SI NO'],['Comportamenti o episodi particolari da segnalare','Si No Quali?'],['Quali sono le maggiori difficoltà che incontra in relazione alla malattia?',''],['Quali sono i suoi punti di forza? Quali gli interessi?',''],['I genitori sono collaborativi? In che senso?',''],['Sono in atto buone sinergie con la struttura sanitaria di riferimento?',''],['Che cosa potrebbe essere di aiuto?',''],['Altro:','']]],
+  ['SA','Sanitari',[['Informazioni sulle terapie in atto',''],['Aspetti del piano terapeutico rilevanti per la progettazione educativa e didattica',''],['Che cosa potrebbe essere di aiuto, da parte della scuola?',''],['Altro:','']]]];
+const SC4=['Molto adeguata','Adeguata','Poco adeguata','Non adeguata'];
+const C1M=['Partecipazione al dialogo educativo','Consapevolezza delle proprie difficoltà','Consapevolezza dei propri punti di forza','Autostima'];
+const C1A=['Regolarità frequenza scolastica','Accettazione e rispetto delle regole','Rispetto degli impegni','Accettazione consapevole degli strumenti compensativi e delle misure dispensative','Autonomia nel lavoro'];
+const C1S=['Sottolinea, identifica parole chiave …','Costruisce schemi, mappe o diagrammi','Utilizza strumenti informatici (computer, correttore ortografico, software …)','Usa strategie di memorizzazione (immagini, colori, riquadrature …)'];
+const LST=['Pronuncia difficoltosa','Difficoltà di acquisizione degli automatismi grammaticali di base','Difficoltà nella scrittura','Difficoltà acquisizione nuovo lessico','Notevoli differenze tra comprensione del testo scritto e orale','Notevoli differenze tra produzione scritta e orale','Interessi nei confronti delle culture e delle civiltà straniere'];
+const PST=['è seguito da familiari','ricorre all\'aiuto di  compagni','utilizza strumenti compensativi','frequenta la scuola in ospedale','fruisce dell\'istruzione domiciliare','è affiancato da volontari','ridurre il carico di studio individuale a casa o riduzione della quantità di esercizi (se necessario e coerente con il profilo di funzionamento).'];
+const PCA=['strumenti informatici (pc, videoscrittura con correttore ortografico,…)','tecnologia di sintesi vocale','appunti scritti al pc','registrazioni digitali','materiali multimediali (video, simulazioni…)','testi semplificati e/o ridotti','fotocopie','schemi e mappe','ogni risorsa didattica informatizzata che gli insegnanti predisporranno appositamente'];
+const PAT=['attività di recupero','attività di consolidamento e/o di potenziamento','attività di laboratorio','attività di classi aperte (per piccoli gruppi)','attività curriculari all\'esterno dell\'ambiente scolastico','attività di carattere culturale, formativo, socializzante'];
+const ECOD={
+  C:['Utilizzo di computer e tablet (possibilmente con stampante)','Utilizzo di programmi di video-scrittura con correttore ortografico (possibilmente vocale)  e con tecnologie di sintesi vocale (anche per le lingue straniere)','Utilizzo di risorse audio (file audio digitali, audiolibri…).','Utilizzo del registratore digitale o di altri strumenti di registrazione per uso personale','Utilizzo di ausili  per il calcolo (tavola pitagorica, linee dei numeri…) ed eventualmente della calcolatrice con foglio di calcolo (possibilmente calcolatrice vocale)','Utilizzo di schemi, tabelle, mappe e diagrammi di flusso come supporto durante compiti e verifiche scritte','Utilizzo di   formulari e di schemi e/o mappe delle varie discipline scientifiche come supporto durante compiti e verifiche scritte','Utilizzo di mappe e schemi durante le interrogazioni, eventualmente anche su supporto digitalizzato (presentazioni multimediali), per facilitare il recupero delle informazioni','Utilizzo di dizionari digitali (cd rom, risorse on line)','Utilizzo di software didattici e compensativi (free e/o commerciali)'],
+  D:['Dispensa dalla lettura ad alta voce in classe','Dispensa dall\'uso dei quattro caratteri di scrittura nelle prime fasi dell\'apprendimento','Dispensa dall\'uso del corsivo e dello stampato minuscolo','Dispensa dalla scrittura sotto dettatura di testi e/o appunti','Dispensa dal ricopiare testi o espressioni matematiche dalla lavagna','Dispensa dallo studio mnemonico delle tabelline, delle forme verbali, delle poesie','Dispensa da un eccessivo carico di compiti con riadattamento e riduzione delle pagine da studiare, senza modificare gli obiettivi formativi','Dispensa parziale dallo studio della lingua straniera in forma scritta, che verrà valutata in percentuale minore rispetto all\'orale non considerando errori ortografici e di spelling'],
+  V:['Predisporre verifiche scritte scalari, accessibili, brevi, strutturate','Facilitare la decodifica della consegna e del testo','Controllare la gestione del diario (corretta trascrizione di compiti/avvisi e della loro comprensione)','Introdurre prove informatizzate e supporti tecnologici','Programmare tempi più lunghi per l\'esecuzione delle prove','Programmare e concordare con l\'alunno le verifiche','Prevedere verifiche orali a compensazione di quelle scritte (soprattutto per la lingua straniera) ove necessario','Fare usare strumenti e mediatori didattici nelle prove sia scritte sia orali','Accordarsi su modalità e tempi delle verifiche scritte con possibilità di utilizzare supporti multimediali','Accordarsi su tempi e su modalità delle interrogazioni','Accordarsi su modalità e tempi delle verifiche scritte con possibilità di utilizzare supporti multimediali','Nelle verifiche scritte, riduzione e adattamento del numero degli esercizi senza modificare gli obiettivi formativi','Nelle verifiche scritte, utilizzo di domande a risposta multipla e (con possibilità di completamento e/o arricchimento con una  discussione orale);  riduzione al minimo delle domande a risposte aperte','Lettura delle consegne degli esercizi e/o fornitura, durante le verifiche, di prove su supporto digitalizzato leggibili dalla sintesi vocale','Parziale sostituzione o completamento delle verifiche scritte con prove orali consentendo l\'uso di schemi riadattati e/o mappe durante l\'interrogazione','Valorizzare il contenuto nell\'esposizione orale, tenendo conto di eventuali difficoltà espositive','Valutazione dei procedimenti e non dei calcoli nella risoluzione dei problemi','Valutazione del contenuto e non degli errori ortografici negli elaborati']};
+// le misure scelte nella parte "Misure" della disciplina precompilano la Sezione E (si possono togliere)
+const MAPPA_E={C1:['comp','pc'],C2:['comp','sintesi','pc'],C3:['comp','sintesi','audio','digitali'],C6:['comp','mappe','tabelle'],C8:['comp','mappe'],C9:['comp','dizionario'],C10:['comp','digitali'],
+  D1:['disp','altaVoce'],D4:['disp','dettatura','appunti'],D5:['disp','lavagna'],D6:['disp','mnemonico'],D7:['disp','quantita'],D8:['disp','scritto'],
+  V2:['val','consegneLette'],V5:['val','tempi'],V6:['val','programmate'],V7:['val','orale'],V8:['val','strumenti'],V12:['val','ridotte'],V13:['val','strutturate'],V14:['val','consegneLette'],V15:['val','orale'],V16:['val','contenuto'],V18:['val','contenuto']};
+for(const [cod,[g,...ks]] of Object.entries(MAPPA_E))DEF_C['E_'+cod]=p=>ks.some(k=>(p[g]||[]).includes(k));
+DEF_C.E_D8=p=>(p.disp||[]).includes('scritto');
+const valC=(p,k)=>{const m=pm(p);return m[k]!==undefined?m[k]:(DEF_C[k]?DEF_C[k](p):undefined)};
+const bOpz=(it)=>it[3]?it[2].map((o,i)=>['c','b_'+it[0]+'_'+i,o]):[['r','b_'+it[0],it[1]||'',opz(it[2])]];
+const PDP_UI=[
+  ['p0','Copertina e intestazione',[['t','istituto','Istituto (vuoto = dal nome della scuola)'],['t','coord','Coordinatore di classe/Team'],['t','refe','Referente/i DSA/BES'],['t','gli','Coordinatore GLI']]],
+  ['pA','Sezione A – Dati e documentazione',[['t','nascL','Luogo di nascita'],['d','nascD','Data di nascita'],['t','lingua','Lingua madre'],['t','bilin','Eventuale bilinguismo'],
+    ['h','Servizio sanitario'],['t','diag','Diagnosi / Relazione multiprofessionale'],['c','privati','Diagnosi rilasciata da privati, in attesa di certificazione SSN'],['t','icd','Codice ICD10'],['t','diagDa','Redatta da'],['d','diagIl','In data'],['t','aggDiag','Aggiornamenti diagnostici'],['t','altreRel','Altre relazioni cliniche'],['t','riab','Interventi riabilitativi'],
+    ['h','Altro servizio (servizi sociali, scuola in ospedale, altro istituto…)'],['t','asDoc','Documentazione presentata alla scuola'],['t','asDa','Redatta da'],['d','asIl','In data'],
+    ['h','Consiglio di classe / team docenti'],['t','cdcRel','Relazione'],['t','cdcDa','Redatta da'],['d','cdcIl','In data'],
+    ['a','famInfo','Informazioni generali fornite dalla famiglia / enti affidatari (percorso scolastico pregresso, ripetenze…)',3]]],
+  ['pA1','Sezione A1 – Il contesto',[['p','Contesto 1: cenni autobiografici, da compilare insieme all\'alunno.'],['a','miPres','Mi presento (chi sono, interessi, difficoltà, cosa mi aiuta, cosa mi aspetto…)',4],['a','forza','I miei punti di forza',2],['a','fragil','I miei aspetti di fragilità',2],['a','bisogni','Bisogni / che cosa chiedo ai miei insegnanti',2],
+    ['a','clima','Contesto 2: clima di classe',3],['a','extra','Contesto 3: extrascuola (famiglia, sport, interessi…)',3]]],
+  ['pB1','Sezione B parte I – DSA: abilità e comportamenti',[['p','Consigliata per DSA e altri disturbi del neurosviluppo. A sinistra i dati della diagnosi, a destra quello che osservate in classe.'],
+    ...[...B1,...B1b].flatMap(([tit,dk,items])=>[['h',tit],['a',dk,'Dalla diagnosi (se presente)',2],...items.flatMap(it=>it[3]?[['p',it[1]||tit.toLowerCase()],...bOpz(it)]:bOpz(it))]),
+    ['h','Aree di forza nelle dimensioni citate'],['a','fDiag','Dalla diagnosi',2],['a','fOss','Osservate in classe',2],['h','Punti di forza'],['a','pfDiag','Dalla diagnosi',2],['a','pfOss','Osservati in classe',2],['h','Altro'],['a','alDiag','Dalla diagnosi',2],['a','alOss','Osservato in classe',2]]],
+  ['pB2','Sezione B parte II – Altri BES',[['c','b2Diag','Diagnosi clinica'],['t','b2DiagT','Diagnosi clinica: quale'],['t','b2Op','Eventuale contatto con operatore sanitario'],['c','b2Doc','Documentazione di altri servizi non sanitari'],['t','b2DocT','Tipologia'],['c','b2Rel','Relazione del consiglio di classe/team'],['d','b2RelD','Redatta in data'],
+    ['a','b2Info','Informazioni specifiche desunte dai documenti',3],['a','b2Descr','Descrizione delle abilità e dei comportamenti osservabili a scuola',3],['GRI']]],
+  ['pMal','Allievi in situazione di malattia',[['c','malOn','Includi la tabella “Allievi con BES determinati da una situazione di malattia”'],['MAL']]],
+  ['pC1','C.1 Osservazione di ulteriori aspetti',[['h','Motivazione'],...C1M.map((x,i)=>['r','c1m'+i,x,opz(SC4)]),['h','Atteggiamenti e comportamenti a scuola'],...C1A.map((x,i)=>['r','c1a'+i,x,opz(SC4)]),
+    ['h','Strategie utilizzate dall\'alunno nello studio'],...C1S.map((x,i)=>['r','c1s'+i,x,opz(['Efficace','Da potenziare'])]),['a','c1alt','Altro',2],['h','Apprendimento delle lingue straniere'],...LST.map((x,i)=>['c','ls'+i,x]),['t','lsAlt','Altro']]],
+  ['pC2','C.2 Patto educativo',[['p','Si concorda con la famiglia e lo studente. Nelle attività di studio l\'allievo:'],['c','tut','è seguito da un Tutor'],['t','tutDis','Tutor nelle discipline'],['r','tutCad','Cadenza',opz(['quotidiana','bisettimanale','settimanale','quindicinale'])],...PST.map((x,i)=>['c','ps'+i,x]),['t','psAlt','Altro'],
+    ['h','Strumenti da utilizzare nel lavoro a casa'],...PCA.map((x,i)=>['c','pc'+i,x]),['t','pcAlt','Risorse informatizzate: quali'],['h','Attività scolastiche individualizzate programmate'],...PAT.map((x,i)=>['c','pa'+i,x]),['a','paAlt','Altro',2]]],
+  ['pD','D.1 Strategie per disciplina e tabella della valutazione',[['PDIS']]],
+  ['pE','E – Strumenti compensativi, misure dispensative, verifica',[['p','Le voci si spuntano da sole in base alle Misure scelte qui sopra per la tua disciplina; puoi aggiungerne o toglierne.'],['h','Strumenti compensativi'],...ECOD.C.map((x,i)=>['c','E_C'+(i+1),'C'+(i+1)+'. '+x]),['t','E_C11','C11. Altro'],
+    ['h','Misure dispensative e interventi di individualizzazione'],...ECOD.D.map((x,i)=>['c','E_D'+(i+1),'D'+(i+1)+'. '+x]),['h','Indicazioni per la verifica e la valutazione'],...ECOD.V.map((x,i)=>['c','E_V'+(i+1),'V'+(i+1)+'. '+x])]],
+  ['pZ','Azioni sul contesto classe',[['p','Strumenti o strategie scelti per l\'alunno e come cambia la didattica per tutta la classe.'],['L','az',[['str','Strumento/strategia per l\'alunno'],['mod','Modifiche per la classe','a']],'Aggiungi riga']]],
+  ['pF','Firme',[['L','fd',[['nome','Cognome e nome'],['dis','Disciplina']],'Aggiungi docente'],['t','luogo','Luogo'],['d','dataF','Data'],['t','dirig','Dirigente scolastico']]]
+];
+CAMPI_EXTRA.GRI=p=>{const m=pm(p);const sel=(k)=>`<select data-chg="peiF" data-k="${k}" aria-label="valore"><option value="">–</option>${['2','1','0','9'].map(x=>`<option ${m[k]===x?'selected':''}>${x}</option>`).join('')}</select>`;
+  return `<h3 class="pei-h">Griglia osservativa (BES “III fascia”: svantaggio socioeconomico, linguistico e culturale)</h3><p class="muted sm">0 nessuna problematicità · 1 lievi o occasionali · 2 rilevanti o reiterate · 9 al contrario è un punto di forza.</p>
+  <div class="tab-wrap"><table class="pdp-gri"><thead><tr><th></th><th>Insegnanti</th><th>Altri operatori</th></tr></thead><tbody>${GRI.map((g,i)=>`<tr><td>${esc(g.replace(/\*\*/g,''))}</td><td>${sel('gi'+i)}</td><td>${sel('go'+i)}</td></tr>`).join('')}</tbody></table></div>`};
+CONTA_EXTRA.GRI=p=>{const m=pm(p);return GRI.some((g,i)=>m['gi'+i]||m['go'+i])?1:0};
+CAMPI_EXTRA.MAL=p=>{const m=pm(p);if(!m.malOn)return '';return MAL.map(([gk,gt,qs])=>`<h3 class="pei-h">${esc(gt)}</h3>`+qs.map(([q,h],i)=>peiCampo(p,['t','mal'+gk+i,q+(h?' ('+h.replace(/ /g,' / ')+')':'')])).join('')).join('')};
+CONTA_EXTRA.MAL=p=>{const m=pm(p);return Object.keys(m).filter(k=>k.startsWith('mal')&&k!=='malOn'&&String(m[k]||'').trim()).length};
+const PDIS_CAMPI=[['nome','Disciplina'],['doc','Docente'],['chiave','Competenza chiave'],['comp','Competenza disciplinare (obiettivi di apprendimento)','a'],['strat','Strategie didattiche e organizzative inclusive','a'],['strum','Strumenti compensativi','a'],['misure','Misure dispensative','a'],['ob','Obiettivi disciplinari personalizzati','a'],['crit','Strategie e criteri di valutazione','a'],['tempi','Tempi aggiuntivi'],['altro','Altro']];
+function miaRigaPDP(c,p){const m=pm(p);return {nome:c.materia||'',doc:m.mDoc||S.profilo.nome||'',chiave:m.mChiave||'',comp:m.mComp||'',strat:p.strategie||'',strum:voci(p,'comp').join('; '),misure:voci(p,'disp').join('; '),ob:p.obiettivi||'',crit:voci(p,'val').filter(x=>!/tempi più lunghi/.test(x)).join('; '),tempi:m.mTempi||((p.val||[]).includes('tempi')?'Sì, circa il 30% in più':''),altro:m.mAltro||''}}
+CAMPI_EXTRA.PDIS=p=>`<h3 class="pei-h">${esc(p._mat||'La tua disciplina')}</h3><p class="muted sm">Strategie, strumenti, misure, obiettivi e criteri si prendono dalla parte qui sopra. Qui aggiungi solo il resto.</p>
+  ${peiCampi(p,[['t','mDoc','Docente (vuoto = il tuo nome)'],['t','mChiave','Competenza chiave'],['a','mComp','Competenza disciplinare (obiettivi di apprendimento)',2],['t','mTempi','Tempi aggiuntivi (vuoto = dalle misure)'],['t','mAltro','Altro']])}
+  <h3 class="pei-h">Altre discipline</h3><p class="muted sm">Le compilano i colleghi; aggiungile se le hai.</p>${peiCampo(p,['L','pdis',PDIS_CAMPI,'Aggiungi disciplina'])}`;
+CONTA_EXTRA.PDIS=p=>{const m=pm(p);return ['mDoc','mChiave','mComp','mTempi','mAltro'].filter(k=>pieno(m[k])).length+(m.pdis||[]).filter(r=>Object.values(r).some(x=>String(x||'').trim())).length};
+function vPDP(c,a){
+  const p=a.piano;p._mat=c.materia||'';const ap=ui.peiApri||{};
+  const out=`<section class="block"><h2>Modello PDP (regionale Piemonte)</h2>
+  <p class="muted sm">Le sezioni del modello della scuola. Compila quello che ti spetta: nel Word le parti vuote restano da completare a mano. Nome, classe e anno li mette l'app.</p>
+  ${PDP_UI.map(([id,tit,campi])=>{const n=compilati(p,campi);return `<details class="ord-box pei-sez" ${ap[id]?'open':''}><summary data-act="peiApri" data-v="${id}"><span><b>${esc(tit)}</b></span><span class="muted sm">${n?n+' compilat'+(n===1?'o':'i'):'vuota'}</span></summary>
+    ${ap[id]?`<div class="form">${peiCampi(p,campi)}</div>`:''}</details>`}).join('')}</section>`;
+  delete p._mat;return out;
+}
+
+/* Word del PDP */
+function wordPDP(c,a){
+  const p=a.piano,m=pm(p);const T='Times New Roman',BL='4F81BD',WW=9638;
+  const H1=(t,o={})=>wP(wR(t,{b:true,col:BL,font:T,sz:o.sz||28}),{bef:o.bef??200,aft:80,keep:true,pb:o.pb});
+  const H2=(t,o={})=>wP(wR(t,{col:BL,font:T,sz:26,i:o.i}),{aft:120,keep:true});
+  const BX=v=>v?'☒':'☐';
+  const fl=(lab,v,o={})=>wP([wR(lab,{b:true}),wR(pieno(v)?' '+v:' ______________________________')],{aft:o.aft??100,ind:o.ind});
+  const dt=v=>v?wD(v):'___/___/______';
+  const lines=(v,n=3)=>pieno(v)?wA(v):Array(n).fill(wP('……………………………………………………………………………………………………………')).join('');
+  const sel=(k,i)=>pm(p)[k]===String(i);
+  let x='';
+  /* copertina */
+  x+=wP(wImg('rIdImg1',1,11.5,5.44),{al:'center',aft:500});
+  const cov=(t,o={})=>wP(wR(t,{b:true,font:'Arial',sz:o.sz||30}),{al:'center',bef:o.bef||0,aft:o.aft??60});
+  const ist=(m.istituto||'').trim()||('SCUOLA SECONDARIA DI PRIMO GRADO'+(S.scuola?' – '+S.scuola.toUpperCase():''));
+  const dsa=p.motivo!=='Altri BES';
+  x+=wT([8000],[[wC(cov('P.D.P.',{bef:160,aft:0})+cov('PIANO DIDATTICO PERSONALIZZATO',{aft:240})+
+    wP(wR((dsa?'☒':'➢')+'  Per allievi con Disturbi Specifici di Apprendimento (DSA-Legge 170/2010)',{sz:18}),{ind:500,aft:100})+wP(wR((!dsa?'☒':'➢')+'  Per allievi con altri Bisogni Educativi Speciali (BES-Dir. Min. 27/12/2012; C.M. n. 8 del  6/03/2013)',{sz:18}),{ind:500,aft:160})+
+    wP(wImg('rIdImg2',2,3.4,3.17),{al:'center',aft:200})+cov('Istituto: '+ist,{sz:28,aft:200})+cov('A.S. '+annoPieno(),{sz:28,aft:160}),8000)]],{center:true,col:'000000',dopo:400});
+  x+=wP([wR('Alunno/a',{b:true,sz:26}),wR(': '+nomeDoc(a),{sz:26})],{aft:240});
+  x+=wP([wR('Classe',{b:true}),wR(': '+c.nome)],{aft:120})+wP([wR('Coordinatore di classe/Team',{b:true}),wR(': '+(pieno(m.coord)?m.coord:'______________________________'))],{aft:120})+
+    wP([wR('Referente/i  DSA/BES',{b:true}),wR(' '+(pieno(m.refe)?m.refe:'______________________________'))],{aft:120})+wP([wR('Coordinatore GLI',{b:true}),wR(' '+(pieno(m.gli)?m.gli:'______________________________'))],{aft:120});
+  /* indice */
+  x+=wP(wR('Indice',{b:true,sz:32}),{al:'center',pb:true,aft:300});
+  for(const [a1,b1] of [['SEZIONE A','(comune a tutti gli allievi con DSA e altri Bisogni Educativi Speciali - BES) – Dati Anagrafici e Informazioni Essenziali di Presentazione dell\'Allievo'],['SEZIONE A1','Il contesto'],['SEZIONE B - PARTE I','(allievi con DSA e altri Disturbi del Neurosviluppo) – Descrizione delle abilità e dei comportamenti'],['SEZIONE B - PARTE II','(Allievi con altri BES)'],['SEZIONE C','(comune a tutti gli allievi con DSA e altri BES) – C.1 Osservazione di Ulteriori Aspetti Significativi; C.2 Patto Educativo'],['SEZIONE D','(comune a tutti gli allievi con DSA e altri BES) – D.1 Interventi educativi e didattici: strategie di personalizzazione/individualizzazione'],['SEZIONE E','(comune a tutti gli allievi con DSA e altri BES) – Quadro riassuntivo degli strumenti compensativi e delle misure dispensative; Indicazioni generali per la verifica/valutazione; Azioni sul contesto classe (Didattica inclusiva)']])
+    x+=wP([wR(a1+' ',{b:true}),wR(b1)],{aft:200});
+  /* A */
+  x+=H1('SEZIONE A (comune a tutti gli allievi)',{pb:true})+H2('Dati Anagrafici e Informazioni Essenziali di Presentazione dell\'Allievo');
+  x+=fl('Cognome e nome allievo/a:',nomeDoc(a))+wP([wR('Luogo di nascita:',{b:true}),wR(' '+(pieno(m.nascL)?m.nascL:'__________________')+'   '),wR('Data',{b:true}),wR(' '+dt(m.nascD))],{aft:100})+fl('Lingua madre:',m.lingua)+fl('Eventuale bilinguismo:',m.bilin,{aft:200});
+  x+=wP(wR('1) INDIVIDUAZIONE DELLA SITUAZIONE DI BISOGNO EDUCATIVO SPECIALE DA PARTE DI:',{b:true,u:true}),{aft:120});
+  x+=wP([wR('➢ SERVIZIO SANITARIO - ',{b:true}),wR('Diagnosi / Relazione multi professionale: ',{b:true,sz:20}),wR(pieno(m.diag)?m.diag:'______________________')],{aft:40});
+  x+=wP([wR('(o diagnosi rilasciata da '),wR('privati, in attesa di certificazione',{b:true}),wR(' da parte del Servizio Sanitario Nazionale)'+(m.privati?'  ☒':''))],{sz:18,aft:100});
+  x+=fl('Codice ICD10:',m.icd,{ind:200})+wP([wR('Redatta da',{b:true}),wR(': '+(pieno(m.diagDa)?m.diagDa:'__________________')+' '),wR('in data',{b:true}),wR(' '+dt(m.diagIl))],{ind:200,aft:100})+fl('Aggiornamenti diagnostici:',m.aggDiag,{ind:200})+fl('Altre relazioni cliniche:',m.altreRel,{ind:200})+fl('Interventi riabilitativi:',m.riab,{ind:200,aft:200});
+  x+=wP(wR('➢ ALTRO SERVIZIO - (Servizi sociali, Scuola in ospedale, altro Istituto scolastico…)',{b:true}),{aft:100})+fl('Documentazione presentata alla scuola',m.asDoc,{ind:200})+wP([wR('Redatta da:',{b:true}),wR(' '+(pieno(m.asDa)?m.asDa:'__________________')+' in data '+dt(m.asIl))],{ind:200,aft:20})+wP('(relazione da allegare)',{ind:200,aft:200});
+  x+=wP([wR('➢ CONSIGLIO DI CLASSE/TEAM DOCENTI - Relazione',{b:true}),wR(' '+(pieno(m.cdcRel)?m.cdcRel:'__________________'))],{aft:100})+wP([wR('Redatta da:',{b:true}),wR(' '+(pieno(m.cdcDa)?m.cdcDa:'__________________')+' in data '+dt(m.cdcIl))],{ind:200,aft:20})+wP('(relazione da allegare)',{ind:200,aft:200});
+  x+=wP(wR('2) INFORMAZIONI GENERALI FORNITE DALLA FAMIGLIA / ENTI AFFIDATARI',{b:true,u:true}),{aft:20})+wP('(ad esempio percorso scolastico pregresso, ripetenze, …)',{ind:300,aft:100})+lines(m.famInfo);
+  /* A1 */
+  const box=(tit,sub,cont)=>wT([WW],[[wC(tit+sub,WW)],[wC(cont,WW)]]);
+  x+=wT([WW],[[wC(wP([wR('SEZIONE A1: IL CONTESTO',{b:true,col:BL,font:T,sz:28}),wR(' (comune a tutti gli allievi)',{b:true,col:BL,font:T,sz:22})])+wP([wR('CONTESTO 1: L\'ALLIEVO/L\'ALLIEVA – ',{b:true}),wR('CENNI AUTOBIOGRAFICI',{b:true,u:true})],{al:'center',bef:120})+wP(wR('INFORMAZIONI  FORNITE DALL\'ALUNNO/STUDENTE: MI PRESENTO',{b:true,u:true}),{al:'center'})+wP('(Da compilare insieme agli allievi)',{al:'center',sz:20}),WW)],
+    [wC(wP('Chi sono; quali Interessi, difficoltà, attività preferite; Quando sono soddisfatto; quando sto bene; Che cosa non mi piace; che cosa mi è di aiuto; che cosa mi è difficile; Che cosa vorrei che succedesse; che cosa mi aspetto dalla scuola, dagli insegnanti, dai compagni; Altro…',{sz:18})+lines(m.miPres,6)+
+      wP('PER CONOSCERMI UN PO\' MEGLIO:',{b:true,bef:160})+wP('I MIEI  PUNTI DI FORZA',{bef:160})+lines(m.forza,2)+wP('I MIEI ASPETTI DI FRAGILITÀ',{bef:160})+lines(m.fragil,2)+wP('BISOGNI/CHE COSA CHIEDO AI MIEI INSEGNANTI?',{bef:160})+lines(m.bisogni,3),WW)]],{col:'000000'});
+  x+=wT([WW],[[wC(wP([wR('IL CONTESTO 2: ',{b:true,sz:26}),wR('CLIMA DI CLASSE',{b:true,u:true})],{al:'center',bef:120})+wP('I docenti possono descrivere alcuni aspetti caratterizzanti il clima di classe: relazioni e collaborazione tra pari, modalità comunicative e di gestione della classe; livello di coinvolgimento di tutti gli insegnanti e dei genitori',{sz:18,al:'center'}),WW)],[wC(lines(m.clima,6),WW)],
+    [wC(wP([wR('IL CONTESTO 3: ',{b:true,sz:26}),wR('EXTRASCUOLA',{b:true,u:true})],{al:'center',bef:120})+wP('I docenti possono raccogliere informazioni significative, condivise con la famiglia e con altri soggetti coinvolti (sanitari, allenatori, educatori,…) su interessi, difficoltà, punti di forza, aspettative, bisogni e modalità di funzionamento dello studente in relazione ai  contesti extrascolastici (famiglia, contesti sportivi, ludici, associazionismo ecc..)',{sz:18,al:'both'})+lines(m.extra,6),WW)]],{col:'000000'});
+  /* B parte I */
+  const b1on=dsa||[...B1,...B1b].some(([,dk,its])=>pieno(m[dk])||its.some(it=>Object.keys(m).some(k=>k.startsWith('b_'+it[0]))));
+  if(b1on){
+    x+=H1('SEZIONE B –  PARTE I',{pb:true})+wP([wR('consigliata in caso di diagnosi ',{b:true,col:BL,font:T}),wR('di DSA e di altri disturbi del neurosviluppo',{b:true,u:true,col:BL,font:T}),wR(' (non riconosciuti come disabilità ex Legge 104)',{b:true,col:BL,font:T})],{aft:120})+H2('Descrizione delle abilità e dei comportamenti');
+    const c1=3300,c2=2400,c3=WW-c1-c2;const ops=it=>it[2].map((o,i)=>wP(BX(it[3]?m['b_'+it[0]+'_'+i]:sel('b_'+it[0],i))+' '+o,{sz:18,aft:20})).join('');
+    const area=([tit,dk,items])=>{const r=[[wC(wP(tit,{b:true,sz:20}),c1),wC(wP(tit,{b:true,sz:20,al:'center'}),c2+c3,{span:2})]];
+      items.forEach((it,i)=>r.push([wC(i===0?wA(m[dk]):wP(''),c1,{vm:i===0?'restart':'cont'}),wC(wP(it[1],{b:!!it[1]&&it[1]===it[1].toUpperCase(),sz:18}),c2),wC(ops(it),c3)]));return r};
+    x+=wT([c1,c2,c3],[[wC(wP('DIAGNOSI SPECIALISTICA',{b:true,al:'center',sz:20})+wP('(dati rilevabili, se presenti,  nella diagnosi)',{al:'center',sz:16}),c1),wC(wP('OSSERVAZIONE IN CLASSE',{b:true,al:'center',sz:20})+wP('(dati rilevati direttamente dagli insegnanti)',{al:'center',sz:18}),c2+c3,{span:2})],
+      ...B1.flatMap(area),[wC(wP('AREE DI  FORZA NELLE DIMENSIONI CITATE',{b:true,sz:16})+wA(m.fDiag),c1),wC(wP('AREE DI  FORZA NELLE DIMENSIONI CITATE',{b:true,sz:16})+wA(m.fOss),c2+c3,{span:2})]],{col:'000000'});
+    x+=wT([c1,c2,c3],[[wC(wP('ALTRE CARATTERISTICHE DEL PROCESSO DI APPRENDIMENTO',{b:true,sz:20}),WW,{span:3})],[wC(wP('(Dati rilevabili se presenti nella diagnosi)',{sz:18}),c1),wC(wP('OSSERVAZIONE IN CLASSE',{b:true,al:'center',sz:20})+wP('(dati rilevati direttamente dagli insegnanti)',{al:'center',sz:18}),c2+c3,{span:2})],
+      ...B1b.flatMap(([tit,dk,items])=>[[wC(wP(tit,{b:true,sz:20}),c1),wC(wP(tit,{b:true,sz:20,al:'center'}),c2+c3,{span:2})],[wC(wA(m[dk]),c1),wC((items[0][1]?wP(items[0][1],{b:true,sz:20}):'')+ops(items[0]),c2+c3,{span:2})]]),
+      [wC(wP('PUNTI DI FORZA',{b:true,sz:18})+wA(m.pfDiag),c1),wC(wP('PUNTI DI FORZA',{b:true,sz:18,al:'center'})+wA(m.pfOss),c2+c3,{span:2})],[wC(wP('ALTRO',{b:true,sz:18})+wA(m.alDiag),c1),wC(wP('ALTRO',{b:true,sz:18,al:'center'})+wA(m.alOss),c2+c3,{span:2})]],{col:'000000'});
+  }
+  /* B parte II */
+  const b2on=!dsa||['b2Diag','b2DiagT','b2Op','b2Doc','b2DocT','b2Rel','b2RelD','b2Info','b2Descr'].some(k=>pieno(m[k]))||GRI.some((g,i)=>m['gi'+i]||m['go'+i]);
+  if(b2on){
+    x+=H1('SEZIONE B -PARTE II',{pb:true})+H2('Allievi con altri Bisogni Educativi Speciali',{i:true})+wP('Descrizione delle abilità e dei comportamenti',{b:true,aft:100});
+    x+=wP('Rientrano in questa sezione eventuali altre tipologie di disturbo evolutivo specifico e le situazioni di svantaggio socioeconomico, culturale e linguistico citate dalla c.m. n. 8 del 06/03/2013. Possono essere qui presi in considerazione anche i ragazzi in situazione di malattia, con o senza ospedalizzazione, o in situazione di istruzione domiciliare.',{i:true,sz:18,al:'both',aft:200});
+    x+=wP([wR('1) '),wR('DOCUMENTAZIONE',{b:true}),wR(' GIÀ IN POSSESSO (vedi Sezione A):')],{aft:100});
+    x+=wP([wR(BX(m.b2Diag)+' '),wR('Diagnosi clinica',{b:true}),wR(' '+(pieno(m.b2DiagT)?m.b2DiagT:'______________________________'))],{ind:400})+wP('Eventuale contatto con operatore sanitario '+(pieno(m.b2Op)?m.b2Op:'______________________________'))+
+      wP([wR(BX(m.b2Doc)+' '),wR('Documentazione di altri servizi',{b:true}),wR(' non sanitari (tipologia) '+(pieno(m.b2DocT)?m.b2DocT:'____________________'))],{ind:400})+wP([wR(BX(m.b2Rel)+' '),wR('Relazione del consiglio di classe/team',{b:true})],{ind:400})+wP('Redatta in data '+(m.b2RelD?wD(m.b2RelD):'____________________'),{aft:200});
+    x+=wP([wR('2) '),wR('INFORMAZIONI',{b:true}),wR(' SPECIFICHE DESUNTE DAI DOCUMENTI SOPRA INDICATI')],{aft:100})+lines(m.b2Info,4);
+    x+=wP([wR('3) '),wR('DESCRIZIONE',{b:true}),wR(' DELLE ABILITÀ E DEI COMPORTAMENTI OSSERVABILI A SCUOLA DA PARTE DEI DOCENTI DI CLASSE')],{bef:200,aft:100})+(pieno(m.b2Descr)?wA(m.b2Descr):'');
+    x+=wP('• per gli allievi con svantaggio socioeconomico, linguistico e culturale, senza diagnosi specialistica, si suggerisce la compilazione della griglia osservativa;',{sz:18,ind:300})+wP('• per gli allievi con Disturbi Evolutivi Specifici si suggerisce l\'osservazione e la descrizione del comportamento e degli apprendimenti sulla base delle priorità di ciascuna disciplina, anche utilizzando gli indicatori predisposti nella Sezione B parte I;',{sz:18,ind:300})+wP('• per gli allievi che usufruiscono dei servizi di scuola in ospedale, istruzione domiciliare o per altre situazioni di malattia, si suggerisce la compilazione delle sezioni B, C2 e D1, da parte del consiglio di classe/team e di eventuali altri consigli/docenti coinvolti (scuola in ospedale, ecc..).',{sz:18,ind:300});
+    const g4=(k)=>wP(['2','1','0','9'].map(v=>wR(m[k]===v?'['+v+']':' '+v+' ',{b:m[k]===v,sz:22})).reduce((a2,r,i)=>a2.concat(i?[wR('   ')]:[],[r]),[]),{al:'center',aft:0});
+    const rich=t=>t.split('**').map((s2,i)=>wR(s2,{b:i%2===1,sz:18}));
+    x+=wP('',{pb:true})+wT([4600,2500,2538],[[wC(wP('GRIGLIA OSSERVATIVA',{b:true,al:'center',sz:20})+wP('per  ALLIEVI CON BES “III FASCIA”',{b:true,al:'center',sz:20})+wP('(Area dello svantaggio socioeconomico, linguistico e culturale)',{b:true,al:'center',sz:18}),4600),wC(wP('Osservazione degli INSEGNANTI',{b:true,al:'center',sz:18}),2500),wC(wP('Eventuale osservazione di altri operatori, (es. educatori, ove presenti)',{b:true,al:'center',sz:18}),2538)],
+      ...GRI.map((g,i)=>[wC(wP(rich(g),{aft:0}),4600),wC(g4('gi'+i),2500,{vc:true}),wC(g4('go'+i),2538,{vc:true})])],{col:'000000'});
+    x+=wP('(Adattamento da Trinchero R., 2010)',{al:'right',sz:18})+wP('LEGENDA',{b:true,bef:200})+wP([wR('0',{b:true}),wR(' L\'elemento descritto dal criterio non mette in evidenza particolari problematicità')],{sz:20,aft:0})+wP([wR('1',{b:true}),wR(' L\'elemento descritto dal criterio mette in evidenza problematicità lievi o occasionali')],{sz:20,aft:0})+wP([wR('2',{b:true}),wR(' L\'elemento descritto dal criterio mette in evidenza problematicità rilevanti o reiterate')],{sz:20,aft:0})+wP([wR('9',{b:true}),wR(' L\'elemento "negativo" descritto non si rileva, ma, al contrario, si evidenzia nell\'allievo come comportamento positivo quale indicatore di un "punto di forza", su cui fare leva nell\'intervento (es: ultimo item - dimostra piena fiducia nelle proprie capacità).')],{sz:20,al:'both'});
+  }
+  /* malattia */
+  if(m.malOn){
+    x+=wP(wR('Allievi con BES  determinati da una situazione di malattia',{i:true,col:BL,font:T,sz:28}),{al:'center',pb:true,aft:120})+wP('Informazioni significative',{b:true,al:'center',aft:200});
+    const n=Math.max(...MAL.map(g=>g[2].length));const ws=[1250,1150,1250,1150,1250,1150,1150,1288];
+    const cell=(gk,q,i)=>q?[wC(wP(q[0],{sz:16}),0),wC(wP(pieno(m['mal'+gk+i])?m['mal'+gk+i]:(q[1]||'……………'),{sz:16}),0)]:[wC(wP(''),0),wC(wP(''),0)];
+    const fix=r=>r.map((c2,i)=>c2.replace('<w:tcW w:w="0"',`<w:tcW w:w="${ws[i]}"`));
+    x+=wT(ws,[fix(MAL.flatMap(([gk,gt])=>[wC(wP(gt,{b:true,sz:18}),0),wC(wP(''),0)])),...Array.from({length:n},(_,i)=>fix(MAL.flatMap(([gk,,qs])=>cell(gk,qs[i],i))))],{col:'000000'});
+  }
+  /* C */
+  x+=H1('SEZIONE C -  (comune a tutti gli allievi con Disturbi del Neurosviluppo e altri BES)',{pb:true})+H2('C.1 Osservazione di Ulteriori Aspetti Significativi',{i:true});
+  {const w1=3500,w2=(WW-w1)/4;const sc=(k)=>SC4.map((s2,i)=>wC(wP(BX(sel(k,i))+' '+s2,{sz:18}),w2));
+    const sec=t=>[wC(wP(t,{b:true,sz:20}),WW,{span:5})];
+    const s2w=(WW-w1)/2;
+    x+=wT([w1,w2,w2,w2,w2],[sec('MOTIVAZIONE'),...C1M.map((t,i)=>[wC(wP(t,{sz:20}),w1),...sc('c1m'+i)]),sec('ATTEGGIAMENTI E COMPORTAMENTI RISCONTRABILI A SCUOLA'),...C1A.map((t,i)=>[wC(wP(t,{sz:20}),w1),...sc('c1a'+i)]),sec('STRATEGIE UTILIZZATE DALL\'ALUNNO NELLO STUDIO'),
+      ...C1S.map((t,i)=>[wC(wP(t,{sz:20}),w1),wC(wP(BX(sel('c1s'+i,0))+'   Efficace',{sz:20}),s2w,{span:2}),wC(wP(BX(sel('c1s'+i,1))+'   Da potenziare',{sz:20}),s2w,{span:2})]),[wC(wP('Altro',{sz:20})+lines(m.c1alt,2),WW,{span:5})]],{col:'000000'});}
+  x+=wT([WW],[[wC(wP('APPRENDIMENTO DELLE LINGUE STRANIERE',{b:true,sz:20}),WW)],[wC(LST.map((t,i)=>wP(BX(m['ls'+i])+'  '+t,{sz:20,ind:300,aft:20})).join('')+wP(BX(pieno(m.lsAlt))+'  Altro '+(pieno(m.lsAlt)?m.lsAlt:'…………………………………………'),{sz:20,ind:300}),WW)]],{col:'000000'});
+  x+=wP(wR('C. 2 PATTO EDUCATIVO',{b:true,i:true,col:BL}),{bef:200,aft:120,keep:true})+wP(wR('Si concorda con la famiglia e lo studente:',{b:true,u:true}),{aft:120});
+  x+=wP('Nelle attività di studio l\'allievo:',{b:true,ind:200,aft:40})+wP(BX(m.tut)+'  è seguito da un Tutor nelle discipline: '+(pieno(m.tutDis)?m.tutDis:'______________________________'),{ind:400,aft:0})+wP('con cadenza:   '+['quotidiana','bisettimanale','settimanale','quindicinale'].map((s2,i)=>BX(sel('tutCad',i))+' '+s2).join('     '),{ind:800,aft:20});
+  x+=PST.map((t,i)=>wP(BX(m['ps'+i])+'  '+t,{ind:400,aft:20})).join('')+wP(BX(pieno(m.psAlt))+'  '+(pieno(m.psAlt)?m.psAlt:'……………………………………………………………'),{ind:400,aft:160});
+  x+=wP('Strumenti da utilizzare  nel lavoro a casa',{b:true,ind:200,aft:40})+PCA.map((t,i)=>wP(BX(m['pc'+i])+'  '+t+(i===PCA.length-1?' '+(pieno(m.pcAlt)?m.pcAlt:'…………………………………………'):''),{ind:400,aft:20})).join('');
+  x+=wP('Attività  scolastiche individualizzate programmate',{b:true,ind:200,bef:160,aft:40})+PAT.map((t,i)=>wP(BX(m['pa'+i])+'  '+t,{ind:400,aft:20})).join('')+wP('altro',{bef:160})+lines(m.paAlt,2);
+  /* D.1 orizzontale */
+  const fm=(m.pdis||[]).filter(r=>Object.values(r).some(v=>String(v||'').trim()));const rows=[];if(c.materia)rows.push(miaRigaPDP(c,p));rows.push(...fm);while(rows.length<2)rows.push({});
+  x+=wP('',{aft:0}).replace('</w:pPr>','<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="567" w:footer="567" w:gutter="0"/></w:sectPr></w:pPr>');
+  {const LW=14570;const ws=[2400,2470,2400,2400,2500,2400];
+    x+=wP(wR('SEZIONE D: INTERVENTI EDUCATIVI E DIDATTICI',{b:true,col:BL,font:T,sz:28}),{al:'center',aft:60})+wP(wR('D.1: STRATEGIE DI PERSONALIZZAZIONE/INDIVIDUALIZZAZIONE',{b:true,i:true,col:BL,font:T,sz:24}),{al:'center',aft:200});
+    const hd=[['DISCIPLINA o AMBITO DISCIPLINARE',''],['STRATEGIE DIDATTICHE e ORGANIZZATIVE INCLUSIVE','(didattica laboratoriale; cooperative learning; uso delle tecnologie; peer tutoring;…)'],['STRUMENTI COMPENSATIVI',''],['MISURE DISPENSATIVE','(se necessarie)'],['OBIETTIVI DISCIPLINARI PERSONALIZZATI','se necessari (conoscenze, abilità, atteggiamenti)'],['STRATEGIE E CRITERI DI VALUTAZIONE','']];
+    const d1=r=>wP('MATERIA',{b:true,sz:18,aft:0})+wP(pieno(r.nome)?String(r.nome).toUpperCase():'………………………',{sz:18})+wP('Competenza chiave',{b:true,sz:18,aft:0})+wP(pieno(r.chiave)?r.chiave:'………………………',{sz:18})+wP('Competenza disciplinare',{b:true,sz:18,aft:0})+wP('(ob di apprendimento)',{sz:16,aft:0})+(pieno(r.comp)?String(r.comp).split(/\n/).map(z=>wP(z,{sz:18})).join(''):wP('………………………',{sz:18}))+wP('Firma docente:',{sz:18,bef:120,aft:0})+wP(pieno(r.doc)?r.doc:'………………………',{sz:18});
+    const tx=v=>pieno(v)?String(v).split(/\n|; /).filter(z=>z.trim()).map(z=>wP(z,{sz:18})).join(''):wP('');
+    x+=wT(ws,[hd.map(([h,s2],i)=>wC(wP(h,{b:true,sz:20})+(s2?wP(s2,{sz:14}):''),ws[i])),...rows.map(r=>[wC(d1(r),ws[0]),wC(tx(r.strat),ws[1]),wC(tx(r.strum),ws[2]),wC(tx(r.misure),ws[3]),wC(tx(r.ob),ws[4]),wC(tx(r.crit),ws[5])])],{col:'000000'});
+  }
+  x+=wP('',{aft:0}).replace('</w:pPr>','<w:sectPr><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="567" w:footer="567" w:gutter="0"/></w:sectPr></w:pPr>');
+  /* E */
+  const eon=k=>!!valC(p,k);
+  x+=H1('SEZIONE E: Quadro riassuntivo degli strumenti compensativi e delle misure dispensative -  parametri e criteri per la verifica/valutazione',{bef:0});
+  x+=wP('Sono contrassegnate con ☒ le voci adottate per l\'alunno/a.',{i:true,sz:18,aft:120});
+  const cod=(pre,list,extra)=>list.map((t,i)=>[wC(wP((eon('E_'+pre+(i+1))?'☒ ':'☐ ')+pre+(i+1)+'.',{b:true,sz:20}),900),wC(wP(t,{sz:20,b:eon('E_'+pre+(i+1))}),WW-900)]).concat(extra||[]);
+  x+=wT([900,WW-900],[[wC(wP(''),900),wC(wP('STRUMENTI COMPENSATIVI',{b:true,al:'center',sz:20})+wP('(legge 170/10 e linee guida 12/07/11)',{b:true,al:'center',sz:20}),WW-900)],...cod('C',ECOD.C,[[wC(wP((pieno(m.E_C11)?'☒ ':'☐ ')+'C11.',{b:true,sz:20}),900),wC(wP('Altro '+(pieno(m.E_C11)?m.E_C11:'______________________________________'),{sz:20}),WW-900)]])],{col:'000000',dopo:40});
+  x+=wP([wR('NB:',{b:true,i:true}),wR(' In caso di '),wR('esame di stato',{b:true}),wR(', gli '),wR('strumenti adottati',{b:true}),wR(' andranno indicati nella '),wR('riunione preliminare per l\'esame conclusivo del primo ciclo e nel documento del 15 maggio',{b:true}),wR(' (nota MPI n 1787/05 – MPI maggio 2007), in cui il Consiglio di Classe dovrà indicare modalità, tempi e sistema valutativo previsti.')],{sz:18,i:true,aft:200});
+  x+=wT([900,WW-900],[[wC(wP(''),900),wC(wP('MISURE DISPENSATIVE (legge 170/10 e linee guida 12/07/11)',{b:true,al:'center',sz:20})+wP('E INTERVENTI DI INDIVIDUALIZZAZIONE',{b:true,al:'center',sz:20}),WW-900)],...cod('D',ECOD.D)],{col:'000000'});
+  x+=wP(wR('INDICAZIONI PER LA VERIFICA E LA  VALUTAZIONE',{b:true,col:BL,font:T,sz:28}),{pb:true,aft:40})+wP(wR('da selezionare in relazione ai bisogni e alle specifiche situazioni apprenditive (es: valevoli per la valutazione formativa in itinere, ma non tutte applicabili per la valutazione “sommativa” in sede Esame di Stato)',{col:BL,font:T,sz:20}),{al:'center',aft:160});
+  x+=wT([900,WW-900],cod('V',ECOD.V),{col:'000000'});
+  x+=wP(wR('STRATEGIE VALUTATIVE – PEDAGOGICHE - GENERALI (valevoli per tutti gli allievi)',{b:true,col:'2E74B5'}),{bef:120,aft:120,keep:true});
+  x+=wT([WW],['La valutazione deve essere parte integrante della didattica e deve essere coerente con il modello didattico assunto (didattica e valutazione per competenze).','Valutare per formare','Valorizzare il processo di apprendimento dell\'allievo e non valutare solo il prodotto/risultato; valutare per “dare valore” all\'allievo e al suo percorso','Durante le prove favorire un clima di classe sereno e tranquillo, anche dal punto di vista dell\'ambiente fisico e organizzativo (rumori, luci, ritmi…)','Considerare gli aspetti emotivi connessi ai processi valutativi','Rassicurare sulle conseguenze delle valutazioni','Rendere l\'allievo protagonista consapevole del processo valutativo','Favorire esperienze di autovalutazione'].map(t=>[wC(wP(t,{sz:20,al:'both'}),WW)]),{col:'000000'});
+  /* tabella riassuntiva */
+  {const ws=[1900,1300,1300,1000,1700,1300,1138];
+    x+=wP(wR('TABELLA RIASSUNTIVA DELL\' IMPIANTO VALUTATIVO PERSONALIZZATO',{b:true,font:T}),{pb:true,aft:0})+wP([wR('(valido anche in sede di ',{col:BL,sz:24}),wR('esami conclusivi dei cicli',{b:true,col:BL,sz:24}),wR(')',{col:BL,sz:24})],{aft:200});
+    const tx=v=>pieno(v)?String(v).split(/\n|; /).filter(z=>z.trim()).map(z=>wP(z,{sz:16})).join(''):wP('');
+    const d=r=>wP([wR('Disciplina',{b:true,font:T,sz:24})])+wP(pieno(r.nome)?String(r.nome).toUpperCase():'…………',{sz:18,font:T})+wP('Competenza Disciplinare',{b:true,sz:18,font:T,aft:0})+wP('(obiettivi di apprendimento)',{sz:12,b:true})+(pieno(r.comp)?wP(r.comp,{sz:16}):wP('……………',{sz:16}))+wP('Competenza chiave',{b:true,sz:18,font:T,aft:0})+wP(pieno(r.chiave)?r.chiave:'……………',{sz:16});
+    const rr=rows.slice();while(rr.length<3)rr.push({});
+    x+=wT(ws,[[wC(wP('Disciplina',{b:true,font:T,sz:26}),ws[0]),wC(wP('Eventuali Misure dispensative',{b:true,font:T,sz:18}),ws[1]),wC(wP('Strumenti compensativi',{b:true,font:T,sz:18}),ws[2]),wC(wP('Tempi aggiuntivi',{b:true,font:T,sz:16}),ws[3]),wC(wP('Obiettivi',{b:true,font:T,sz:24})+wP('Che cosa valutare?',{b:true,font:T,sz:20})+wP('(abilità, conoscenze, atteggiamenti)',{b:true,font:T,sz:16}),ws[4]),wC(wP('Criteri valutativi',{b:true,font:T,sz:24}),ws[5]),wC(wP('Altro',{b:true,font:T,sz:24}),ws[6])],
+      ...rr.map(r=>[wC(d(r),ws[0]),wC(tx(r.misure),ws[1]),wC(tx(r.strum),ws[2]),wC(tx(r.tempi),ws[3]),wC(tx(r.ob),ws[4]),wC(tx(r.crit),ws[5]),wC(tx(r.altro),ws[6])])],{col:'000000'});
+    x+=wP('n.b.',{b:true,font:T})+wP([wR('È importante ricordare che la valutazione costituisce un processo multidimensionale, in virtù del quale occorre ',{font:T,sz:20}),wR('valutare tutte le dimensioni',{b:true,font:T,sz:20}),wR(', anche quelle relative ai fattori personali (relazionali, emotivi, motivazionali, corporei…), che vanno considerati in ottica pedagogica (non clinica o diagnostica) entro il framework della didattica e valutazione per competenze. Ad esempio, aspetti come l\'autoefficacia, la motivazione o la capacità espressiva corporea costituiscono elementi – chiave delle competenze generali (disciplinari e trasversali) di un allievo/a.',{font:T,sz:20})],{al:'both'});
+  }
+  /* azioni sul contesto */
+  x+=wP(wR('AZIONI SUL CONTESTO CLASSE (Verso una didattica inclusiva)',{b:true,col:'2E74B5',sz:28}),{pb:true,aft:300});
+  {const az=(m.az||[]).filter(r=>Object.values(r).some(v=>String(v||'').trim()));const n=Math.max(7,az.length);
+    x+=wT([2300,WW-2300],[[wC(wP('Tab. 3: PROPOSTE DI ADEGUAMENTI-ARRICCHIMENTI  DELLA “DIDATTICA DI CLASSE” IN RELAZIONE AGLI STRUMENTI/STRATEGIE INTRODOTTE PER L\'ALLIEVO CON BES',{b:true,font:T,al:'center',sz:20}),WW,{span:2})],
+      [wC(wP('Strumento/strategia scelti per l\'allievo',{b:true,al:'center',sz:18})+wP('(Introduzione di facilitatori)',{b:true,al:'center',sz:18}),2300),wC(wP('Modifiche per la classe',{b:true,al:'center',sz:20})+wP('(descrivere sinteticamente come si intende modificare/adeguare la didattica per tutti)',{al:'center',sz:16}),WW-2300)],
+      ...Array.from({length:n},(_,i)=>[wC(wP(az[i]?.str||'',{sz:20})+wP(''),2300),wC(wA(az[i]?.mod)+wP(''),WW-2300)])],{col:'000000'});}
+  x+=wP('Le parti coinvolte si impegnano a rispettare quanto condiviso e concordato, nel presente PDP, per il successo formativo dell\'alunno.',{b:true,sz:26,line:true,bef:300,aft:200});
+  x+=wP([wR('Si ricorda che il PDP è uno strumento di lavoro dinamico ',{sz:20}),wR('da aggiornarsi in itinere',{b:true,u:true,sz:20}),wR(', da parte di tutti gli attori. Per l\'interazione docenti di classe - docenti di scuola ospedale o domiciliare questo avviene non solo come scambio di informazioni, ma anche per la definizione della programmazione e di forme e modalità di valutazione in itinere e finale.',{sz:20})],{al:'both',line:true,pb:true,aft:200});
+  {const fd=(m.fd||[]).filter(r=>Object.values(r).some(v=>String(v||'').trim()));if(!fd.length&&S.profilo.nome&&c.materia)fd.push({nome:S.profilo.nome,dis:c.materia});const n=Math.max(9,fd.length);
+    x+=wP('FIRMA DEI DOCENTI',{b:true,aft:100})+wT([3200,3200,3238],[[wC(wP('COGNOME E NOME',{sz:24}),3200),wC(wP('DISCIPLINA',{sz:24}),3200),wC(wP('FIRMA',{sz:24}),3238)],...Array.from({length:n},(_,i)=>[wC(wP(fd[i]?.nome||'')+wP(''),3200),wC(wP(fd[i]?.dis||''),3200),wC(wP(''),3238)])],{col:'000000'});}
+  x+=wP('FIRMA DEI GENITORI',{b:true,bef:160,aft:200})+wP('______________________________          ______________________________',{aft:200});
+  x+=wP('FIRMA DELL\'ALLIEVO (per la scuola sec. di II gr.)',{b:true,aft:200})+wP('______________________________',{aft:240});
+  x+=wP((pieno(m.luogo)?m.luogo:'____________________')+', lì '+(m.dataF?wD(m.dataF):'____________'),{aft:120})+wP('IL DIRIGENTE SCOLASTICO',{b:true,ind:5200,aft:240})+wP(pieno(m.dirig)?m.dirig:'____________________________________',{ind:4800});
+  return docx(`PDP ${c.nome} ${nomeDoc(a)}`.replace(/\s+/g,' ').trim().replace(/[\/:*?"<>|.]/g,'')+'.docx',x,{font:'Arial',sz:22,media:[['rIdImg1',IMG_PEI.header],['rIdImg2',IMG_PEI.gears]]});
+}
+
 function vPiani(c){
   if(ui.piano){const a=c.alunni.find(x=>x.id===ui.piano);if(a&&a.piano)return vPiano(c,a);ui.piano=null}
   const con=c.alunni.filter(a=>a.piano).sort(byNome),senza=c.alunni.filter(a=>!a.piano).sort(byNome);
@@ -929,7 +1175,7 @@ function vPiano(c,a){
   <section class="block"><div class="block-h"><h2>${esc(a.nome)}</h2></div>
   <div class="seg">${['PDP','PEI'].map(t=>`<button class="${p.tipo===t?'on':''}" data-act="pTipo" data-v="${t}">${t}</button>`).join('')}</div>
   ${p.tipo==='PDP'?`<div class="seg">${['DSA','Altri BES'].map(t=>`<button class="${p.motivo===t?'on':''}" data-act="pMot" data-v="${t}">${t}</button>`).join('')}</div>`:''}
-  ${p.tipo==='PEI'?'<p class="note">Il PEI segue il modello nazionale (Allegato A3) e lo approva il GLO. Qui sotto prepari la parte di '+esc(c.materia||'disciplina')+'; più in basso trovi tutto il modello da compilare.</p>':''}</section>
+  ${p.tipo==='PEI'?'<p class="note">Il PEI segue il modello nazionale (Allegato A3) e lo approva il GLO. Qui sotto prepari la parte di '+esc(c.materia||'disciplina')+'; più in basso trovi tutto il modello da compilare.</p>':'<p class="note">Qui sotto prepari la parte di '+esc(c.materia||'disciplina')+'. Più in basso trovi tutto il modello PDP della scuola da compilare con il consiglio di classe.</p>'}</section>
   <section class="block"><h2>Scadenze</h2><div class="row2">${Object.keys(NOMI_SCAD).map(k=>`<div><label class="lbl" for="sc${k}">${NOMI_SCAD[k]}</label><input type="date" id="sc${k}" value="${p.scad?.[k]||''}" data-chg="pScad" data-k="${k}"></div>`).join('')}</div>
   <p class="muted sm">Date indicative: correggile con quelle della tua scuola. Le scadenze dei prossimi 30 giorni compaiono nella pagina delle classi.</p></section>
   <section class="block"><h2>Misure</h2><p class="muted sm">Spunta le voci: il testo si scrive da solo.</p>${grp('comp')}${grp('disp')}${grp('val')}</section>
@@ -939,13 +1185,13 @@ function vPiano(c,a){
   <section class="block"><h2>Osservazioni durante l'anno</h2>
   <div class="form"><textarea id="ossNew" rows="2" placeholder="Es. Con la mappa ha completato la verifica in autonomia"></textarea><div class="btns"><button class="btn" data-act="addOss">Aggiungi osservazione</button></div></div>
   ${p.oss.length?`<ul class="wlist">${[...p.oss].sort((x,y)=>y.data.localeCompare(x.data)).map(o=>`<li><span class="t">${dBreve(o.data)}</span><span class="w">${esc(o.testo)}</span><button class="icon" data-act="rmOss" data-v="${o.id}" aria-label="Elimina">×</button></li>`).join('')}</ul>`:''}</section>
-  ${p.tipo==='PEI'?vPEI(c,a):''}
+  ${p.tipo==='PEI'?vPEI(c,a):vPDP(c,a)}
   <section class="block export"><h2>Esporta</h2>
   <label class="tog"><input type="checkbox" data-chg="iniz" ${S.soloIniziali?'checked':''}><span>Nel documento scrivi solo le iniziali dell'alunno</span></label>
   <label class="tog"><input type="checkbox" data-chg="ossWord" ${ui.ossWord?'checked':''}><span>Includi le osservazioni</span></label>
   ${p.tipo==='PEI'?`<div class="btns"><button class="btn primary" data-act="wordPEI">Scarica il PEI (modello A3)</button><button class="btn" data-act="wordPiano">Solo il mio contributo</button><button class="btn" data-act="copiaPiano">Copia il testo</button></div>
-  <p class="muted sm">Il PEI completo ha le 12 sezioni del modello: le parti non compilate restano vuote. Il nome dell'alunno è in chiaro: è un documento riservato.</p>`:`<div class="btns"><button class="btn primary" data-act="wordPiano">Scarica in Word</button><button class="btn" data-act="copiaPiano">Copia il testo</button></div>
-  <p class="muted sm">${c.coord?'Bozza completa per il consiglio di classe.':'Solo il tuo contributo per '+esc(c.materia||'la disciplina')+'.'}</p>`}</section>
+  <p class="muted sm">Il PEI completo ha le 12 sezioni del modello: le parti non compilate restano vuote. Il nome dell'alunno è in chiaro: è un documento riservato.</p>`:`<div class="btns"><button class="btn primary" data-act="wordPDP">Scarica il PDP (modello regionale)</button><button class="btn" data-act="wordPiano">Solo il mio contributo</button><button class="btn" data-act="copiaPiano">Copia il testo</button></div>
+  <p class="muted sm">Il PDP completo segue il modello della scuola: le parti non compilate restano da completare. Il nome dell'alunno è in chiaro: è un documento riservato.</p>`}</section>
   <section class="block danger">${ui.conferma==='rmPiano'?`<p>Eliminare il piano di ${esc(a.nome)}?</p><div class="btns"><button class="btn bad" data-act="rmPiano">Elimina</button><button class="btn ghost" data-act="conf" data-v="">Annulla</button></div>`:'<button class="link bad" data-act="conf" data-v="rmPiano">Elimina piano</button>'}</section>`;
 }
 
@@ -1262,6 +1508,7 @@ document.addEventListener('click',e=>{
     case 'copiaPiano':{const a=c.alunni.find(x=>x.id===ui.piano);copia(testoPiano(c,a,!!ui.pieno).replace(/^#+ /gm,''),'Testo copiato');return}
     case 'wordPiano':{const a=c.alunni.find(x=>x.id===ui.piano);wordPiano(c,a);return}
     case 'pieno':ui.pieno=!ui.pieno;break;
+    case 'wordPDP':{const a=c.alunni.find(x=>x.id===ui.piano);wordPDP(c,a);return}
     case 'wordPEI':{const a=c.alunni.find(x=>x.id===ui.piano);wordPEI(c,a);return}
     case 'peiApri':e.preventDefault();ui.peiApri=ui.peiApri||{};ui.peiApri[v]=!ui.peiApri[v];break;
     case 'peiR':{const a=c.alunni.find(x=>x.id===ui.piano);const m=pm(a.piano);const k=b.dataset.k;m[k]=m[k]===v&&k!=='mia'?null:v;save();break}
