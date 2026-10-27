@@ -308,6 +308,43 @@ select.mese{width:auto;min-height:34px;padding:4px 8px;font-size:.8rem}
 .oggi-ore .ora.sost{background:var(--accent-soft);border-radius:10px;padding-inline:8px}
 .oggi-det{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
 .wlist.fare li{grid-template-columns:minmax(0,1fr) auto}.wlist.fare .w{flex-direction:column;align-items:flex-start;gap:2px}
+.allegati{margin-top:10px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.allegati .all{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn.carica{cursor:pointer}.btn.carica.disabled{opacity:.6;pointer-events:none}
+.viewer{position:fixed;inset:0;z-index:60;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+.vw-h{display:flex;gap:10px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--bg)}
+.vw-h b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vw-b{flex:1;overflow:auto;padding:8px;background:#e9e6f0;-webkit-overflow-scrolling:touch}
+.vw-pag{display:block;width:100%;height:auto;margin:0 auto 8px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+@media (min-width:900px){.viewer{left:auto;width:48vw;box-shadow:-6px 0 20px rgba(0,0,0,.12)}body.con-viewer .main,body.con-viewer .top-in,body.con-viewer .tabs{margin-right:48vw;margin-left:16px}}
+.domande{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.dom{border:1.5px solid var(--line);border-radius:var(--r);padding:10px;display:flex;flex-direction:column;gap:8px}
+.dom-h{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.dom-h>b{font-size:1.1rem;min-width:1.4em}
+.dom-pt{display:flex;gap:4px;align-items:center;font-size:.85rem;color:var(--muted)}.dom-pt input{width:3.6em;min-height:34px;padding:2px 6px}
+.dom-az{margin-left:auto;display:flex;gap:2px}
+.opz{display:flex;flex-direction:column;gap:6px}.op{display:flex;gap:6px;align-items:center}.op input[type=text]{flex:1}
+.chk.giusta{color:var(--ok);font-weight:700}
+input.mini{width:4em;min-height:32px;padding:2px 6px;display:inline-block}
+.tog.sm{min-height:32px;font-size:.88rem}
+.chiave{border-top:1px solid var(--line);padding-top:10px;margin-top:6px}
+.chiave-rapida{margin-top:10px;display:flex;flex-direction:column;gap:4px}
+.kr,.rr{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.kr>b,.rr>b{min-width:1.8em;text-align:right;font-variant-numeric:tabular-nums}
+.bolla{width:38px;height:38px;border-radius:50%;border:2px solid var(--line);background:var(--bg);font-weight:700;color:var(--muted);cursor:pointer;padding:0}
+.bolla.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong)}
+.bolla.giusta{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}.bolla.sbagliata{background:var(--bad-soft,#fde3e3);border-color:var(--bad);color:var(--bad)}
+.risp{display:flex;flex-direction:column;gap:6px;margin-top:6px}.risp .pt{max-width:220px}
+.rr.fuori{opacity:.35}.rr.dubbio{background:var(--warn-soft);border-radius:10px;padding:2px 6px}
+.stampa{margin-top:10px}
+.dom select{width:auto;min-height:36px;padding:2px 8px;font-size:.88rem}
+.dom .cons{font-weight:700}
+.items{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.it{border-left:3px solid var(--line);padding-left:8px;display:flex;flex-direction:column;gap:4px}.it.nodsa{border-left-color:var(--warn)}
+.it-h{display:flex;gap:6px;align-items:center}.it-h>span{min-width:1.4em;text-align:right}.it-h input[type=text]{flex:1;min-width:0}
+.it-h .chk.sm{font-size:.78rem;gap:4px;white-space:nowrap}
+.opz-r{display:flex;flex-wrap:wrap;gap:6px 10px;padding-left:1.8em;align-items:center}
+.opz-r .op{display:flex;align-items:center;gap:4px;font-weight:700;color:var(--muted)}.opz-r .op input[type=text]{width:8.5em;min-height:32px;padding:2px 6px;font-weight:400}
+.opz-r .op.giusta{color:var(--ok)}.opz-r .op.giusta input[type=text]{border-color:var(--ok)}
+.es-auto{display:flex;flex-direction:column;gap:4px;border-top:1px dashed var(--line);padding-top:6px}.es-auto.fuori{opacity:.35}
 </style></head>
 <body>
 <div id="app"></div>
@@ -359,7 +396,7 @@ if(!S||S.v!==1)S=seed();
 /* griglia: scala con più e meno (x, x+, x½, (x+1)-) */
 function etichetta(v){const i=Math.floor(v+1e-9),f=Math.round((v-i)*100);return f===0?String(i):f===25?i+'+':f===50?i+'½':(i+1)+'-'}
 function grigliaStd(){const g=[];for(let v=10;v>=2-1e-9;v-=0.25){const min=v===2?0:Math.max(0,Math.round((v*10-1.25)*100)/100);g.push({min,voto:etichetta(v)})}return g}
-function migra(x){if(!x.griglia)x.griglia=grigliaStd();if(!x.nomeCompletoDefault){x.soloIniziali=false;x.nomeCompletoDefault=1}if(x.scuola==null)x.scuola='';x.classi.forEach(c=>{c.verifiche=c.verifiche||[];c.prog=c.prog||{ann:{},mesi:{}}});
+function migra(x){if(!x.griglia)x.griglia=grigliaStd();if(!x.nomeCompletoDefault){x.soloIniziali=false;x.nomeCompletoDefault=1}if(x.scuola==null)x.scuola='';x.classi.forEach(c=>{c.verifiche=c.verifiche||[];c.prog=c.prog||{ann:{},mesi:{}};c.verifiche.forEach(vf=>{if(vf.domande&&!vf.esx){daDomande(vf);syncEsercizi(c,vf)}})});
   if(!x.pulDup){x.pulDup=1;const vuota=c=>!c.alunni.length&&!c.agenda.length&&!c.argomenti.length&&!c.verifiche.length&&!(c.voti||[]).length&&!(c.dim||[]).length&&!Object.values(c.prog?.ann||{}).some(v=>String(v||'').trim());
     x.classi=x.classi.filter(c=>!(!String(c.materia||'').trim()&&vuota(c)&&x.classi.some(o=>o!==c&&o.nome.trim().toLowerCase()===c.nome.trim().toLowerCase()&&o.ordine===c.ordine&&String(o.materia||'').trim())))}
   return x}
@@ -647,7 +684,7 @@ function vOggi(){
     const sog=c.alunni.filter(a=>contatore(c,a.id,d)>=S.soglia);if(sog.length)fare.push({c,t:`${sog.length===1?sog[0].nome+' ha':sog.length+' alunni hanno'} raggiunto ${S.soglia} dimenticanze: decidi se mettere il 5`,nc,warn:1});
     for(const {v,manc} of daCorreggere(c,d))fare.push({c,t:`Da correggere: ${v.titolo} (${manc} ${manc===1?'scheda':'schede'} senza punteggio)`,nc,ver:v.id});}
   const sc=scadenzeVicine().filter(x=>x.data>=d);
-  h+=`<section class="block"><h2>Da fare</h2>${fare.length||sc.length?`<ul class="wlist fare">${fare.map(f=>`<li><span class="w"><span class="${f.warn?'warn-t':''}">${esc(f.t)}</span><span class="muted sm">${esc(f.nc)}</span></span><button class="link sm" data-act="${f.ver?'apriVer':'apri'}" data-v="${f.c.id}" ${f.ver?`data-ver="${f.ver}"`:''}>Apri</button></li>`).join('')}
+  h+=`<section class="block"><h2>Da fare</h2>${fare.length||sc.length?`<ul class="wlist fare">${fare.map(f=>`<li><span class="w"><span class="${f.warn?'warn-t':''}">${esc(f.t)}</span><span class="muted sm">${esc(f.nc)}</span></span><button class="link sm" data-act="${f.ver?'oggiVer':'apri'}" data-v="${f.c.id}" ${f.ver?`data-ver="${f.ver}"`:''}>Apri</button></li>`).join('')}
     ${sc.map(x=>`<li><span class="w"><span>${x.tipo} ${esc(x.alunno)}: ${esc(x.cosa.toLowerCase())} entro ${dBreve(x.data)}</span><span class="muted sm">${esc(x.classe)}</span></span><button class="link sm" data-act="apriPiano" data-c="${x.cid}" data-v="${x.aid}">Apri</button></li>`).join('')}</ul>`:'<p class="empty">Niente in sospeso per questo giorno.</p>'}</section>`;
   return h;
 }
@@ -1485,6 +1522,7 @@ function wordMese(c,m){
 const num=v=>{if(v===''||v==null)return null;const n=parseFloat(String(v).replace(',','.'));return isNaN(n)?null:n};
 function votoDa(pct){const g=[...S.griglia].sort((a,b)=>b.min-a.min);for(const f of g)if(pct>=f.min-1e-9)return f.voto;return g.length?g[g.length-1].voto:''}
 function esito(vf,alId){
+  if(vf.esx)return esitoEsx(vf,alId);
   const r=vf.rid?.[alId]||[];const es=vf.esercizi.filter(e=>!r.includes(e.id));
   const p=vf.punti?.[alId]||{};let tot=0,max=0,fatti=0;
   for(const e of es){max+=e.max;const x=num(p[e.id]);if(x!=null){tot+=x;fatti++}}
@@ -1492,6 +1530,291 @@ function esito(vf,alId){
   return {tot,max,pct,completo,iniziato:fatti>0,voto:completo?votoDa(pct):'',ridotta:r.length>0};
 }
 const fmt=n=>Number.isInteger(n)?String(n):n.toFixed(1).replace('.',',');
+/* ---------- Librerie caricate solo quando servono (stanno nella cartella lib dell'app) ---------- */
+const SCRIPT_OK={};
+function carica(src){return SCRIPT_OK[src]||(SCRIPT_OK[src]=new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>{delete SCRIPT_OK[src];rej(new Error('Non riesco a caricare '+src+': serve la connessione la prima volta'))};document.head.appendChild(s)}))}
+
+/* ---------- Allegati delle verifiche: cifrati con la frase segreta, a pezzi in classi/{uid}/file ---------- */
+const FILE_CACHE=new Map(),PEZZO=700000;
+function idbF(){return new Promise((res,rej)=>{const r=indexedDB.open('makeiteasy-classi-file',1);r.onupgradeneeded=()=>r.result.createObjectStore('f');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function idbFile(id,blob){const db=await idbF();return new Promise((res,rej)=>{const t=db.transaction('f',blob===undefined?'readonly':'readwrite');const st=t.objectStore('f');
+  if(blob===undefined){const q=st.get(id);q.onsuccess=()=>res(q.result||null);q.onerror=()=>rej(q.error)}else{blob===null?st.delete(id):st.put(blob,id);t.oncomplete=()=>res(true);t.onerror=()=>rej(t.error)}})}
+function ridimensiona(f,max,q){return new Promise((res,rej)=>{const u=URL.createObjectURL(f);const im=new Image();
+  im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+    c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(b=>b?res(b):rej(new Error('Immagine non leggibile')),'image/jpeg',q)};
+  im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('Non riesco a leggere questa immagine'))};im.src=u})}
+async function preparaFile(f){
+  if(/^image\//.test(f.type)||/\.(jpe?g|png|heic|heif|webp)$/i.test(f.name))return {blob:await ridimensiona(f,2200,0.85),mime:'image/jpeg',nome:f.name.replace(/\.[^.]+$/,'')+'.jpg'};
+  if(f.type==='application/pdf'||/\.pdf$/i.test(f.name)){if(f.size>8e6)throw new Error('Il PDF supera 8 MB: riducilo o fotografa le pagine');return {blob:f,mime:'application/pdf',nome:f.name}}
+  throw new Error('Carica un PDF o una foto (JPG, PNG)');
+}
+async function salvaAllegato(f){
+  const {blob,mime,nome}=await preparaFile(f);const buf=new Uint8Array(await blob.arrayBuffer());const id='f'+Date.now().toString(36)+uid();let n=0;
+  if(CLOUD.ref&&CLOUD.key){const iv=crypto.getRandomValues(new Uint8Array(12));const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},CLOUD.key,buf));const s=b64(ct);n=Math.ceil(s.length/PEZZO);
+    const col=CLOUD.ref.collection('file');for(let i=0;i<n;i++)await col.doc(id+'_'+i).set({i,n,iv:i===0?b64(iv):'',c:s.slice(i*PEZZO,(i+1)*PEZZO)});}
+  else await idbFile(id,blob);
+  FILE_CACHE.set(id,blob);return {id,nome,mime,size:buf.length,n};
+}
+async function leggiAllegato(m){
+  if(FILE_CACHE.has(m.id))return FILE_CACHE.get(m.id);let blob=null;
+  if(m.n&&CLOUD.ref&&CLOUD.key){const col=CLOUD.ref.collection('file');const ds=await Promise.all(Array.from({length:m.n},(_,i)=>col.doc(m.id+'_'+i).get()));
+    if(ds.some(d=>!d.exists))throw new Error('File non ancora arrivato su questo dispositivo: riprova tra poco');
+    const s=ds.map(d=>d.data().c).join('');const iv=ds[0].data().iv;
+    const raw=await crypto.subtle.decrypt({name:'AES-GCM',iv:ub64(iv)},CLOUD.key,ub64(s));blob=new Blob([raw],{type:m.mime})}
+  else blob=await idbFile(m.id);
+  if(!blob)throw new Error('File non trovato su questo dispositivo');FILE_CACHE.set(m.id,blob);return blob;
+}
+async function eliminaAllegato(m){FILE_CACHE.delete(m.id);try{if(m.n&&CLOUD.ref){const col=CLOUD.ref.collection('file');for(let i=0;i<m.n;i++)await col.doc(m.id+'_'+i).delete()}else await idbFile(m.id,null)}catch(e){}}
+
+/* visualizzatore: fuori da #app, così i ridisegni dell'app non lo toccano */
+async function apriAllegato(m){
+  chiudiViewer();const v=document.createElement('div');v.className='viewer';v.id='viewer';
+  v.innerHTML=`<div class="vw-h"><b>${esc(m.nome)}</b><span class="muted sm" id="vwInfo">Apro…</span><button class="btn sm" data-act="vwChiudi">Chiudi</button></div><div class="vw-b" id="vwBody"></div>`;
+  document.body.appendChild(v);document.body.classList.add('con-viewer');
+  try{const blob=await leggiAllegato(m);const body=document.getElementById('vwBody');if(!body)return;
+    if(m.mime==='application/pdf'){await carica('lib/pdf.min.js');pdfjsLib.GlobalWorkerOptions.workerSrc='lib/pdf.worker.min.js';
+      const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise;document.getElementById('vwInfo').textContent=pdf.numPages+(pdf.numPages===1?' pagina':' pagine');
+      for(let i=1;i<=pdf.numPages;i++){const pg=await pdf.getPage(i);const w=Math.max(320,body.clientWidth-16);const v1=pg.getViewport({scale:1});const sc=w/v1.width*(window.devicePixelRatio||1);
+        const vp=pg.getViewport({scale:sc});const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;cv.className='vw-pag';body.appendChild(cv);
+        await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise}}
+    else{const im=document.createElement('img');im.src=URL.createObjectURL(blob);im.className='vw-pag';im.alt=m.nome;body.appendChild(im);document.getElementById('vwInfo').textContent='Foto'}
+  }catch(e){const i=document.getElementById('vwInfo');if(i)i.textContent=e.message||String(e)}
+}
+function chiudiViewer(){const v=document.getElementById('viewer');if(v){v.querySelectorAll('img').forEach(i=>URL.revokeObjectURL(i.src));v.remove()}document.body.classList.remove('con-viewer')}
+
+/* ---------- Foglio risposte: griglia con quattro quadratini neri per la lettura da foto ---------- */
+function layoutGriglia(items){
+  const W=1400,F=56,M=24,cols=items.length>14?2:1,rows=Math.max(1,Math.ceil(items.length/cols)),top=170,rowH=66,H=top+rows*rowH+70;
+  const fid=[[M+F/2,M+F/2],[W-M-F/2,M+F/2],[W-M-F/2,H-M-F/2],[M+F/2,H-M-F/2]];const colW=(W-2*(M+F))/cols;const bub=[],lab=[];
+  items.forEach((it,i)=>{const col=Math.floor(i/rows),row=i%rows;const x0=M+F+col*colW,y=top+row*rowH+rowH/2;lab.push({t:String(it.num),x:x0+70,y});
+    it.lab.forEach((l,j)=>bub.push({q:it.id,j,l,x:x0+150+j*86,y,r:24}))});
+  return {W,H,F,M,fid,bub,lab,cols,colW,top};
+}
+function disegnaGriglia(L,titolo){
+  const cv=document.createElement('canvas');cv.width=L.W;cv.height=L.H;const x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,L.W,L.H);
+  x.fillStyle='#000';for(const [cx,cy] of L.fid)x.fillRect(cx-L.F/2,cy-L.F/2,L.F,L.F);
+  x.font='bold 34px Arial, Helvetica, sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('Answer sheet',L.W/2,L.M+L.F/2);
+  x.font='26px Arial, Helvetica, sans-serif';x.fillStyle='#444';x.fillText(String(titolo||'').slice(0,60),L.W/2,L.M+L.F/2+44);
+  x.fillStyle='#000';x.font='bold 30px Arial, Helvetica, sans-serif';for(const l of L.lab)x.fillText(l.t,l.x,l.y);
+  for(const b of L.bub){x.beginPath();x.arc(b.x,b.y,b.r,0,Math.PI*2);x.lineWidth=3;x.strokeStyle='#222';x.stroke();x.fillStyle='#b8b8b8';x.font='22px Arial, Helvetica, sans-serif';x.fillText(b.l,b.x,b.y+1)}
+  return cv;
+}
+
+/* ---------- Lettura delle crocette dalla foto ---------- */
+function omografia(src,dst){// 4 coppie di punti: trova H tale che dst ≈ H·src
+  const A=[],B=[];for(let i=0;i<4;i++){const [x,y]=src[i],[u,v]=dst[i];A.push([x,y,1,0,0,0,-u*x,-u*y]);B.push(u);A.push([0,0,0,x,y,1,-v*x,-v*y]);B.push(v)}
+  const n=8;for(let c=0;c<n;c++){let p=c;for(let r=c+1;r<n;r++)if(Math.abs(A[r][c])>Math.abs(A[p][c]))p=r;[A[c],A[p]]=[A[p],A[c]];[B[c],B[p]]=[B[p],B[c]];
+    for(let r=0;r<n;r++){if(r===c)continue;const f=A[r][c]/A[c][c];for(let k=c;k<n;k++)A[r][k]-=f*A[c][k];B[r]-=f*B[c]}}
+  const h=B.map((b,i)=>b/A[i][i]);return (x,y)=>{const w=h[6]*x+h[7]*y+1;return [(h[0]*x+h[1]*y+h[2])/w,(h[3]*x+h[4]*y+h[5])/w]};
+}
+function caricaImg(f){return new Promise((res,rej)=>{const u=URL.createObjectURL(f);const im=new Image();im.onload=()=>{res(im);setTimeout(()=>URL.revokeObjectURL(u),1000)};im.onerror=()=>rej(new Error('Non riesco a leggere la foto'));im.src=u})}
+async function leggiFoglio(file,L){
+  const img=file instanceof HTMLImageElement||file instanceof HTMLCanvasElement?file:await caricaImg(file);
+  const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height;const k=Math.min(1,1800/Math.max(iw,ih));const w=Math.round(iw*k),h=Math.round(ih*k);
+  const cv=document.createElement('canvas');cv.width=w;cv.height=h;const cx=cv.getContext('2d',{willReadFrequently:true});cx.drawImage(img,0,0,w,h);
+  const px=cx.getImageData(0,0,w,h).data;const g=new Float32Array(w*h);for(let i=0;i<w*h;i++)g[i]=px[i*4]*0.299+px[i*4+1]*0.587+px[i*4+2]*0.114;
+  // soglia locale (immagine integrale): regge ombre e luce non uniforme
+  const W1=w+1,I=new Float64Array(W1*(h+1));for(let y=0;y<h;y++){let s=0;for(let x=0;x<w;x++){s+=g[y*w+x];I[(y+1)*W1+x+1]=I[y*W1+x+1]+s}}
+  const R=Math.max(10,Math.round(Math.min(w,h)/14));const dark=new Uint8Array(w*h);
+  for(let y=0;y<h;y++){const y0=Math.max(0,y-R),y1=Math.min(h,y+R+1);for(let x=0;x<w;x++){const x0=Math.max(0,x-R),x1=Math.min(w,x+R+1);
+    const m=(I[y1*W1+x1]-I[y0*W1+x1]-I[y1*W1+x0]+I[y0*W1+x0])/((x1-x0)*(y1-y0));const v=g[y*w+x];dark[y*w+x]=(v<m*0.7&&v<175)||v<60?1:0}}
+  // componenti connesse: cerco i quadratini neri
+  const lab=new Int32Array(w*h),st=new Int32Array(w*h);let nl=0;const comp=[];const md=Math.min(w,h);
+  for(let i=0;i<w*h;i++){if(!dark[i]||lab[i])continue;nl++;let sp=0;st[sp++]=i;lab[i]=nl;let a=0,sx=0,sy=0,mnx=w,mxx=0,mny=h,mxy=0;
+    while(sp){const j=st[--sp];const x=j%w,y=(j-x)/w;a++;sx+=x;sy+=y;if(x<mnx)mnx=x;if(x>mxx)mxx=x;if(y<mny)mny=y;if(y>mxy)mxy=y;
+      for(const q of [j-1,j+1,j-w,j+w]){if(q<0||q>=w*h)continue;if((q===j-1&&x===0)||(q===j+1&&x===w-1))continue;if(dark[q]&&!lab[q]){lab[q]=nl;st[sp++]=q}}}
+    const bw=mxx-mnx+1,bh=mxy-mny+1;if(bw<md*0.012||bw>md*0.14||bh<md*0.012||bh>md*0.14)continue;const fill=a/(bw*bh),as=bw/bh;
+    if(fill>0.47&&as>0.6&&as<1.65)comp.push({x:sx/a,y:sy/a,a,bw,bh})}
+  comp.sort((p,q)=>q.a-p.a);const C=comp.slice(0,14);
+  const att=(L.fid[1][0]-L.fid[0][0])/(L.fid[3][1]-L.fid[0][1]);const quads=[];
+  const dist=(p,q)=>Math.hypot(p.x-q.x,p.y-q.y);
+  for(let a=0;a<C.length;a++)for(let b=a+1;b<C.length;b++)for(let c2=b+1;c2<C.length;c2++)for(let d=c2+1;d<C.length;d++){
+    const P=[C[a],C[b],C[c2],C[d]];const amax=Math.max(...P.map(p=>p.a)),amin=Math.min(...P.map(p=>p.a));if(amax/amin>3)continue;
+    const mx=P.reduce((t,p)=>t+p.x,0)/4,my=P.reduce((t,p)=>t+p.y,0)/4;P.sort((p,q)=>Math.atan2(p.y-my,p.x-mx)-Math.atan2(q.y-my,q.x-mx));
+    let s=0;for(let i=0;i<4;i++)s=Math.min(s,0);let i0=0;for(let i=1;i<4;i++)if(P[i].x+P[i].y<P[i0].x+P[i0].y)i0=i;const Q=[0,1,2,3].map(i=>P[(i0+i)%4]);// TL,TR,BR,BL (y verso il basso)
+    let conv=true;for(let i=0;i<4;i++){const p=Q[i],q=Q[(i+1)%4],r=Q[(i+2)%4];if((q.x-p.x)*(r.y-q.y)-(q.y-p.y)*(r.x-q.x)<=0)conv=false}if(!conv)continue;
+    const larg=(dist(Q[0],Q[1])+dist(Q[3],Q[2]))/2,alt=(dist(Q[0],Q[3])+dist(Q[1],Q[2]))/2;const rap=(larg/alt)/att;if(rap<0.72||rap>1.38)continue;
+    const area=larg*alt;const lato=Math.sqrt((amax+amin)/2);if(larg<lato*6)continue;
+    const sc=area*(1-Math.abs(Math.log(rap)));quads.push({sc,Q})}
+  const msgNo='Non trovo i quattro quadratini neri del foglio risposte: rifai la foto dall\'alto, con tutta la griglia inquadrata e ben illuminata';
+  if(!quads.length)throw new Error(msgNo);
+  // verifica: con i quadratini giusti, i contorni stampati dei cerchi devono trovarsi dove li aspetto
+  const prova=Q=>{const H=omografia(L.fid,Q.map(p=>[p.x,p.y]));const G=(X,Y)=>{const [u,v]=H(X,Y);const x=Math.round(u),y=Math.round(v);return x>=0&&y>=0&&x<w&&y<h?g[y*w+x]:255};
+    let ok=0;for(const b of L.bub){let bo=0,fu=0;for(let t=0;t<16;t++){const an=t/16*Math.PI*2,c=Math.cos(an),s2=Math.sin(an);bo+=Math.min(G(b.x+c*b.r*0.95,b.y+s2*b.r*0.95),G(b.x+c*b.r,b.y+s2*b.r),G(b.x+c*b.r*1.05,b.y+s2*b.r*1.05));fu+=G(b.x+c*b.r*1.6,b.y+s2*b.r*1.6)}
+      if(fu-bo>fu*0.08)ok++}
+    return {H,G,q:ok/L.bub.length}};
+  quads.sort((p,q)=>q.sc-p.sc);let best=null;for(const x of quads.slice(0,8)){const t=prova(x.Q);if(!best||t.q>best.q)best=t;if(t.q>0.9)break}
+  if(!best||best.q<0.6)throw new Error(msgNo);
+  const G=best.G;
+  const ris={};
+  const per={};for(const b of L.bub){
+    const ring=[];for(let t=0;t<24;t++){const an=t/24*Math.PI*2;for(const rr of [1.55,1.75])ring.push(G(b.x+Math.cos(an)*b.r*rr,b.y+Math.sin(an)*b.r*rr))}
+    ring.sort((p,q)=>p-q);const bianco=Math.max(90,ring[Math.floor(ring.length*0.7)]);
+    let s=0,n=0;for(let dy=-0.6;dy<=0.6;dy+=0.12)for(let dx=-0.6;dx<=0.6;dx+=0.12){if(dx*dx+dy*dy>0.36)continue;const v=G(b.x+dx*b.r,b.y+dy*b.r);s+=Math.max(0,Math.min(1,(bianco-v)/bianco));n++}
+    (per[b.q]=per[b.q]||[]).push({j:b.j,f:s/n})}
+  for(const [q,L2] of Object.entries(per)){L2.sort((p,q2)=>q2.f-p.f);const t=L2[0],s2=L2[1]||{f:0};
+    if(t.f<0.11)ris[q]={ans:null,dubbio:false,f:t.f};
+    else if(t.f>=0.2&&t.f-s2.f>=0.12&&t.f>=s2.f*1.8)ris[q]={ans:t.j,dubbio:t.f<0.24||s2.f>=0.2,f:t.f};
+    else ris[q]={ans:t.j,dubbio:true,f:t.f}}
+  return ris;
+}
+
+/* ---------- Verifiche a esercizi (come quelle di tua sorella): ogni esercizio ha consegna, frasi e punteggio "__/N" ---------- */
+const LETT='abcdef';
+const TIPI_ES=[['mc','Scelta multipla (a, b, c, d)'],['vf','True / False'],['gap','Completa le frasi (spazi)'],['righe','Frasi con righe per rispondere'],['testo','Scrittura libera']];
+const CONSEGNE={mc:['Choose the correct alternative.','Choose the correct alternative and write the correct answer in the space.','Circle the correct answer.'],
+  vf:['Read the sentences and write T (true) or F (false).','True or false?'],
+  gap:['Complete the sentences with the verbs in brackets.','Complete the sentences with the verbs below.','Fill in the gaps with the correct form.','Complete the sentences using some/any.','Write the correct plural form.'],
+  righe:['Rewrite the sentences in the negative and interrogative forms.','Translate the following sentences.','Answer the questions with complete answers.','Write questions with the words given.','Give short answers.'],
+  testo:['Write a short text about your summer holidays.','Write a short email to a friend.','Describe your best friend.']};
+const AUTO=b=>b.tipo==='mc'||b.tipo==='vf';
+const labIt=(b,it)=>b.tipo==='vf'?['T','F']:(it.opz||[]).map((_,i)=>LETT[i]);
+function nuovoBlocco(tipo){const b={id:uid(),tipo,consegna:CONSEGNE[tipo][0],esempio:'',banca:'',pt:1,items:[]};if(tipo==='righe')b.righe=1;if(tipo==='testo'){b.righe=10;b.max=10}
+  if(tipo!=='testo')b.items.push(nuovoItem(b));return b}
+function nuovoItem(b){return b.tipo==='mc'?{id:uid(),testo:'',opz:['','','',''],ok:null}:b.tipo==='vf'?{id:uid(),testo:'',ok:null}:{id:uid(),testo:''}}
+const itemsDi=(b,dsa)=>b.items.filter(it=>!(dsa&&it.noDsa));
+const maxBlocco=(b,dsa)=>b.tipo==='testo'?(+b.max||0):itemsDi(b,dsa).length*(+b.pt||0);
+const usaDsa=(vf,al)=>!!vf.dsa?.[al];
+// vecchie verifiche a "domande" (versione di prima): diventano esercizi
+function daDomande(vf){if(!vf.domande||vf.esx)return;const B=[];let cur=null;
+  for(const d of vf.domande){if(d.tipo==='aperta'){B.push({id:d.id,tipo:'righe',consegna:d.testo||'Answer the question.',esempio:'',banca:'',pt:+d.punti||1,righe:d.righe??4,items:[{id:uid(),testo:''}],noDsa:!!d.noDsa});cur=null;continue}
+    if(!cur||cur.tipo!==d.tipo||cur.pt!==(+d.punti||1)){cur={id:uid(),tipo:d.tipo,consegna:CONSEGNE[d.tipo][0],esempio:'',banca:'',pt:+d.punti||1,items:[]};B.push(cur)}
+    cur.items.push(d.tipo==='mc'?{id:d.id,testo:d.testo,opz:d.opz,ok:d.ok,noDsa:!!d.noDsa}:{id:d.id,testo:d.testo,ok:d.ok,noDsa:!!d.noDsa})}
+  vf.esx=B;delete vf.domande;vf.punti={};vf.letto={};for(const [al,r] of Object.entries(vf.risp||{}))for(const b of B)if(AUTO(b)&&b.items.some(it=>r[it.id]!=null))(vf.letto[al]=vf.letto[al]||{})[b.id]=true}
+function syncEsercizi(c,vf){
+  if(!vf.esx)return;vf.esercizi=vf.esx.map((b,i)=>({id:b.id,nome:'Es. '+(i+1),max:maxBlocco(b,false)}));
+  const serve=vf.esx.some(b=>b.noDsa||b.items.some(it=>it.noDsa));vf.dsa=vf.dsa||{};vf.dsaMan=vf.dsaMan||{};
+  for(const a of c.alunni){if(vf.dsaMan[a.id])continue;if(serve&&(a.piano||a.bes))vf.dsa[a.id]=true;else delete vf.dsa[a.id]}
+  // esercizi interi tolti a chi ha la versione PDP/PEI
+  vf.rid=vf.rid||{};vf.ridMan=vf.ridMan||{};
+  for(const a of c.alunni){if(vf.ridMan[a.id])continue;const via=usaDsa(vf,a.id)?vf.esx.filter(b=>b.noDsa).map(b=>b.id):[];if(via.length)vf.rid[a.id]=via;else delete vf.rid[a.id]}
+}
+function esitoEsx(vf,al){
+  const dsa=usaDsa(vf,al),r=vf.rid?.[al]||[],p=vf.punti?.[al]||{},R=vf.risp?.[al]||{},L=vf.letto?.[al]||{};let tot=0,max=0,fatti=0,n=0;
+  for(const b of vf.esx){if(r.includes(b.id))continue;const m=maxBlocco(b,dsa);if(!m&&!AUTO(b))continue;n++;max+=m;
+    if(AUTO(b)){if(L[b.id]){fatti++;tot+=itemsDi(b,dsa).filter(it=>it.ok!=null&&R[it.id]===it.ok).length*(+b.pt||0)}}
+    else{const x=num(p[b.id]);if(x!=null){tot+=Math.min(x,m);fatti++}}}
+  const completo=n>0&&fatti===n;const pct=max?tot/max*100:0;
+  return {tot,max,pct,completo,iniziato:fatti>0,voto:completo?votoDa(pct):'',ridotta:r.length>0||dsa};
+}
+/* importa più frasi insieme: una per riga; per la scelta multipla "frase | a | b* | c | d" (l'asterisco segna la giusta), per True/False "frase | T" */
+function incolla(b,txt){let n=0;for(const raw of txt.split(/\r?\n/)){const l=raw.trim();if(!l)continue;const parti=l.split('|').map(x=>x.trim());
+  if(b.tipo==='mc'){const op=parti.slice(1);const it={id:uid(),testo:parti[0],opz:op.length?op.map(o=>o.replace(/\*$/,'').trim()):['','','',''],ok:null};const k=op.findIndex(o=>/\*$/.test(o));if(k>=0)it.ok=k;b.items.push(it)}
+  else if(b.tipo==='vf'){const it={id:uid(),testo:parti[0],ok:null};if(parti[1])it.ok=/^(t|v|true|vero)$/i.test(parti[1])?0:/^(f|false|falso)$/i.test(parti[1])?1:null;b.items.push(it)}
+  else b.items.push({id:uid(),testo:parti[0]});n++}
+  b.items=b.items.filter((it,i,a)=>it.testo||a.length===1||(it.opz||[]).some(Boolean));return n}
+function vEsercizi(c,vf){
+  const B=vf.esx;const tot=B.reduce((t,b)=>t+maxBlocco(b,false),0);const auto=B.filter(AUTO);const senza=auto.reduce((t,b)=>t+b.items.filter(it=>it.ok==null).length,0);
+  let h=`<section class="block"><div class="block-h"><h2>Esercizi</h2><button class="link" data-act="domEdit">${ui.domEdit?'Chiudi modifica':'Modifica esercizi'}</button></div>
+  <p class="muted sm">${B.length} esercizi · totale ${fmt(tot)} punti${auto.length?` · ${auto.length} a correzione automatica`:''}${senza?` · <b class="warn-t">${senza} risposte giuste da segnare</b>`:''}</p>`;
+  if(ui.domEdit){
+    h+=`<div class="form"><div class="row2"><div><label class="lbl" for="veTit">Titolo sul foglio</label><input type="text" id="veTit" value="${esc(vf.titoloFoglio??vf.titolo)}" data-chg="vfTit" placeholder="Es. PAST SIMPLE TEST"></div></div></div>
+    <ol class="domande">${B.map((b,i)=>{
+      return `<li class="dom"><div class="dom-h"><b>${i+1}</b><select data-chg="bTipo" data-b="${b.id}" aria-label="Tipo">${TIPI_ES.map(([k,l])=>`<option value="${k}" ${b.tipo===k?'selected':''}>${l}</option>`).join('')}</select>
+        ${b.tipo==='testo'?`<label class="dom-pt">su <input type="text" inputmode="decimal" value="${esc(b.max)}" data-chg="bMax" data-b="${b.id}" aria-label="Punti"> punti</label>`:`<label class="dom-pt"><input type="text" inputmode="decimal" value="${esc(b.pt)}" data-chg="bPt" data-b="${b.id}" aria-label="Punti per frase"> punti a frase · __/${fmt(maxBlocco(b,false))}</label>`}
+        <span class="dom-az"><button class="icon" data-act="bSu" data-b="${b.id}" aria-label="Su" ${i?'':'disabled'}>↑</button><button class="icon" data-act="bGiu" data-b="${b.id}" aria-label="Giù" ${i<B.length-1?'':'disabled'}>↓</button><button class="icon" data-act="bRm" data-b="${b.id}" aria-label="Elimina">×</button></span></div>
+      <input type="text" list="cons-${b.tipo}" value="${esc(b.consegna)}" data-chg="bCons" data-b="${b.id}" placeholder="Consegna (in grassetto sul foglio)" class="cons">
+      ${b.tipo==='gap'?`<input type="text" value="${esc(b.banca)}" data-chg="bBanca" data-b="${b.id}" placeholder="Parole da usare (facoltativo): say - eat - be - sing">`:''}
+      <input type="text" value="${esc(b.esempio)}" data-chg="bEs" data-b="${b.id}" placeholder="Esempio (facoltativo, in corsivo): I wear trainers… → I wore trainers…">
+      ${b.tipo==='testo'?`<label class="muted sm">Righe per scrivere <input type="number" min="1" max="40" value="${b.righe??10}" data-chg="bRighe" data-b="${b.id}" class="mini"></label>`:`
+      ${b.tipo==='righe'?`<label class="muted sm">Righe sotto ogni frase <input type="number" min="1" max="6" value="${b.righe??1}" data-chg="bRighe" data-b="${b.id}" class="mini"></label>`:''}
+      <ol class="items">${b.items.map((it,j)=>`<li class="it ${it.noDsa?'nodsa':''}"><div class="it-h"><span class="muted">${j+1}</span><input type="text" value="${esc(it.testo)}" data-chg="iTesto" data-b="${b.id}" data-i="${it.id}" placeholder="${b.tipo==='gap'?'My sister is two years ______ (young) than me.':b.tipo==='righe'?'She likes tennis.':'Frase (vuota se è nel PDF caricato)'}">
+          <label class="chk sm" title="Togli questa frase a chi ha PDP/PEI"><input type="checkbox" data-chg="iDsa" data-b="${b.id}" data-i="${it.id}" ${it.noDsa?'checked':''}> PDP</label><button class="icon" data-act="iRm" data-b="${b.id}" data-i="${it.id}" aria-label="Togli">×</button></div>
+        ${b.tipo==='mc'?`<div class="opz-r">${it.opz.map((o,k)=>`<label class="op ${it.ok===k?'giusta':''}"><input type="radio" name="ok-${it.id}" data-chg="iOk" data-b="${b.id}" data-i="${it.id}" value="${k}" ${it.ok===k?'checked':''} aria-label="giusta ${LETT[k]}">${LETT[k]})<input type="text" value="${esc(o)}" data-chg="iOpz" data-b="${b.id}" data-i="${it.id}" data-k="${k}"></label>`).join('')}${it.opz.length<6?`<button class="link sm" data-act="iOpzAdd" data-b="${b.id}" data-i="${it.id}">+</button>`:''}${it.opz.length>2?`<button class="link sm" data-act="iOpzRm" data-b="${b.id}" data-i="${it.id}">−</button>`:''}</div>`:''}
+        ${b.tipo==='vf'?`<div class="checks row">${['True','False'].map((l,k)=>`<label class="chk ${it.ok===k?'giusta':''}"><input type="radio" name="ok-${it.id}" data-chg="iOk" data-b="${b.id}" data-i="${it.id}" value="${k}" ${it.ok===k?'checked':''}> ${l} è giusto</label>`).join('')}</div>`:''}</li>`).join('')}</ol>
+      <div class="btns"><button class="link sm" data-act="iAdd" data-b="${b.id}">+ frase</button><button class="link sm" data-act="iIncOpen" data-b="${b.id}">Incolla più frasi</button></div>
+      ${ui.incolla===b.id?`<div class="form"><textarea id="incTxt" rows="5" placeholder="${b.tipo==='mc'?'Una frase per riga. Con le risposte:\nMy sister is two years ___ than me. | young | so young | younger* | the youngest\n(l\'asterisco segna quella giusta)':b.tipo==='vf'?'Una frase per riga, con T o F dopo la barra:\nLondon is the capital of the UK. | T':'Una frase per riga'}"></textarea><div class="btns"><button class="btn sm" data-act="iInc" data-b="${b.id}">Aggiungi</button><button class="btn ghost sm" data-act="iIncOpen" data-b="">Annulla</button></div></div>`:''}`}
+      <label class="tog sm"><input type="checkbox" data-chg="bDsa" data-b="${b.id}" ${b.noDsa?'checked':''}><span>Togli tutto l'esercizio per chi ha PDP/PEI</span></label></li>`}).join('')}</ol>
+    ${Object.entries(CONSEGNE).map(([k,L])=>`<datalist id="cons-${k}">${L.map(x=>`<option value="${esc(x)}">`).join('')}</datalist>`).join('')}
+    <div class="btns">${TIPI_ES.map(([k,l])=>`<button class="btn sm" data-act="bAdd" data-v="${k}">+ ${l}</button>`).join('')}</div>
+    <div class="form chiave"><span class="lbl">Verifica già pronta (PDF o foto)? Crea solo la chiave delle crocette</span><div class="row2"><div><label class="lbl" for="qkN">Quante domande</label><input type="number" id="qkN" min="1" max="60" value="10" inputmode="numeric"></div>
+      <div><label class="lbl" for="qkO">Risposte</label><select id="qkO">${[2,3,4,5].map(n=>`<option value="${n}" ${n===4?'selected':''}>${n===2?'T / F':LETT.slice(0,n).split('').join(', ')}</option>`).join('')}</select></div><div><label class="lbl" for="qkP">Punti ciascuna</label><input type="text" id="qkP" value="1" inputmode="decimal"></div></div>
+      <div class="btns"><button class="btn sm" data-act="domChiave">Aggiungi</button></div></div>`;
+    if(auto.length)h+=`<div class="chiave-rapida"><span class="lbl">Chiave delle risposte</span>${B.map((b,bi)=>AUTO(b)?b.items.map((it,j)=>`<div class="kr"><b>${bi+1}.${j+1}</b>${labIt(b,it).map((l,k)=>`<button class="bolla ${it.ok===k?'on':''}" data-act="iOkB" data-b="${b.id}" data-i="${it.id}" data-v="${k}">${l}</button>`).join('')}</div>`).join(''):'').join('')}</div>`;
+  }
+  h+=`<div class="btns stampa"><button class="btn" data-act="stampaV" data-v="docx">Word</button><button class="btn" data-act="stampaV" data-v="pdf">PDF</button><button class="btn" data-act="stampaV" data-v="docx-dsa">Word PDP/PEI</button><button class="btn" data-act="stampaV" data-v="pdf-dsa">PDF PDP/PEI</button>${auto.length?`<button class="btn" data-act="stampaV" data-v="foglio">Solo foglio risposte</button>`:''}</div>
+  <p class="muted sm">Stampa nello stile delle tue verifiche (Georgia). La versione PDP/PEI ha carattere grande senza grazie, più spazio e senza le frasi o gli esercizi tolti, con la stessa numerazione. ${auto.length?'In fondo c\'è il foglio risposte con i quadratini neri, per correggere con la foto.':''}</p></section>`;
+  return h;
+}
+function vRispAl(c,vf,a,fuori,ass){
+  const R=vf.risp?.[a.id]||{},p=vf.punti?.[a.id]||{},Lt=vf.letto?.[a.id]||{},dub=(ui.omrDubbi||{})[a.id]||[],dsa=usaDsa(vf,a.id);
+  return `<div class="risp">${vf.esx.map((b,bi)=>{const out=fuori.includes(b.id);const m=maxBlocco(b,dsa);
+    if(!AUTO(b))return `<label class="pt ${out?'fuori':''}"><span>Es. ${bi+1}<small>/${fmt(m)}</small></span><input type="text" inputmode="decimal" value="${out?'':esc(p[b.id]??'')}" ${out?'disabled':''} data-al="${a.id}" data-es="${b.id}" class="pin" aria-label="${esc(a.nome)} esercizio ${bi+1}"></label>`;
+    const its=b.items.map((it,j)=>({it,j})).filter(x=>!(dsa&&x.it.noDsa));const giuste=its.filter(x=>x.it.ok!=null&&R[x.it.id]===x.it.ok).length;
+    return `<div class="es-auto ${out?'fuori':''}"><span class="lbl">Es. ${bi+1} · ${Lt[b.id]?`${fmt(giuste*(+b.pt||0))}/${fmt(m)}`:'da correggere'}</span>${its.map(({it,j})=>`<div class="rr ${dub.includes(it.id)?'dubbio':''}"><b>${bi+1}.${j+1}</b>${labIt(b,it).map((l,k)=>`<button class="bolla ${R[it.id]===k?'on':''} ${R[it.id]===k&&it.ok!=null?(k===it.ok?'giusta':'sbagliata'):''}" data-act="risp" data-al="${a.id}" data-b="${b.id}" data-d="${it.id}" data-v="${k}" ${out?'disabled':''}>${l}</button>`).join('')}</div>`).join('')}
+      ${Lt[b.id]||out?'':`<button class="link sm" data-act="tuttoVuoto" data-al="${a.id}" data-b="${b.id}">Non ha risposto a nessuna</button>`}</div>`}).join('')}</div>
+    ${vf.esx.some(AUTO)?`<div class="sc-az"><button class="link sm" data-act="omrAl" data-v="${a.id}">📷 Leggi dalla foto del foglio</button>${dub.length?`<span class="warn-t sm">${dub.length} da controllare (in giallo)</span>`:''}</div>`:''}`;
+}
+function itemsFoglio(vf,dsa){const out=[];vf.esx.forEach((b,bi)=>{if(!AUTO(b)||(dsa&&b.noDsa))return;b.items.forEach((it,j)=>{if(dsa&&it.noDsa)return;out.push({id:it.id,num:`${bi+1}.${j+1}`,lab:labIt(b,it).map(x=>x.toUpperCase()),b})})});return out}
+
+/* ---------- Stampa nello stile delle sue verifiche ---------- */
+async function pngGriglia(vf,dsa){const it=itemsFoglio(vf,dsa);const cv=disegnaGriglia(layoutGriglia(it),vf.titoloFoglio||vf.titolo);const u=cv.toDataURL('image/png');return {b64:u.split(',')[1],url:u,w:cv.width,h:cv.height}}
+const blocchiStampa=(vf,dsa)=>vf.esx.map((b,i)=>({b,n:i+1})).filter(x=>!(dsa&&x.b.noDsa));
+async function wordVerifica(c,vf,dsa,soloFoglio){
+  const font=dsa?'Verdana':'Georgia',sz=dsa?28:24;const R=(t,o={})=>wR(t,{...o,font});const sp=dsa?200:100;
+  const P=(x,o={})=>wP(Array.isArray(x)?x:R(x,o),{aft:o.aft??sp,bef:o.bef||0,ind:o.ind,al:o.al,pb:o.pb,keep:o.keep});
+  const tab=(x,stops)=>x.replace('<w:pPr>',`<w:pPr><w:tabs>${stops.map(s=>`<w:tab w:val="${s<0?'right':'left'}" w:pos="${Math.abs(s)}"/>`).join('')}</w:tabs>`);
+  const riga='<w:p><w:pPr><w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="000000"/></w:pBdr><w:spacing w:before="'+(dsa?360:280)+'" w:after="0"/></w:pPr></w:p><w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="40" w:lineRule="exact"/></w:pPr></w:p>';
+  const punti=m=>tab(P([R('\t__/'+fmt(m),{b:true})],{aft:dsa?480:360}),[-9600]);
+  let x='';const media=[];
+  if(!soloFoglio){
+    x+=tab(P([R('Name:',{b:true}),R('\tClass:',{b:true}),R('\tDate:',{b:true})],{aft:600}),[5200,7400]);
+    x+=P([R(vf.titoloFoglio||vf.titolo,{b:true})],{al:'center',aft:dsa?500:400});
+    for(const {b,n} of blocchiStampa(vf,dsa)){const its=itemsDi(b,dsa);
+      x+=P([R(n+'. '+(b.consegna||''),{b:true})],{keep:true,aft:sp});
+      if(b.banca)x+=P(b.banca,{keep:true});
+      if(b.esempio)x+=P([R('Example: '+b.esempio,{i:true})],{keep:true});
+      if(b.tipo==='testo'){for(let r=0;r<(b.righe??10);r++)x+=riga}
+      else its.forEach(it=>{const k=b.items.indexOf(it)+1;
+        if(b.tipo==='mc'){x+=P(`${k}. ${it.testo||''}`,{keep:true,aft:dsa?120:40});const T=it.opz.map((o,q)=>`${LETT[q]}) ${o||''}`);const lim=dsa?14:19;const L=Math.max(...T.map(t=>t.length));const nc=L<=lim?4:L<=lim*2?2:1;
+          for(let q=0;q<T.length;q+=nc){const fine=q+nc>=T.length;x+=tab(P(T.slice(q,q+nc).map((t,z)=>R((z?'\t':'')+t)),{ind:600,aft:fine?(dsa?240:160):(dsa?60:20),keep:!fine}),nc===4?[2800,5000,7200]:[5200])}}
+        else if(b.tipo==='vf')x+=tab(P([R(`${k}. ${it.testo||''}`),R('\tT     F',{b:true})]),[-9600]);
+        else if(b.tipo==='righe'){x+=P(`${k}. ${it.testo||''}`,{keep:true,aft:0});for(let r=0;r<(b.righe??1);r++)x+=riga}
+        else x+=P(`${k}  ${it.testo||''}`)});
+      x+=punti(maxBlocco(b,dsa));
+    }
+  }
+  if(itemsFoglio(vf,dsa).length){const g=await pngGriglia(vf,dsa);media.push(['rIdImg1',g.b64]);const wcm=16.5,hcm=wcm*g.h/g.w;
+    x+=P([R('Answer sheet – '+(vf.titoloFoglio||vf.titolo),{b:true})],{pb:!soloFoglio,aft:120})+tab(P([R('Name:',{b:true}),R('\tClass:',{b:true}),R('\tDate:',{b:true})],{aft:200}),[5200,7400])+
+      P([R('Fill in the circle of the right answer (or draw a clear X inside it). Do not write on the black squares.',{i:true,sz:dsa?24:20})],{aft:200})+wP(wImg('rIdImg1',1,wcm,hcm),{al:'center'})}
+  const nome=`${soloFoglio?'Foglio risposte':'Verifica'} ${vf.titolo} ${c.nome}${dsa?' PDP-PEI':''}`.replace(/[\/:*?"<>|.]/g,'-').replace(/\s+/g,' ').trim()+'.docx';
+  return docx(nome,x,{font,sz,media});
+}
+async function pdfVerifica(c,vf,dsa,soloFoglio){
+  await carica('lib/jspdf.min.js');const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:'mm',format:'a4',compress:true});
+  let F='helvetica';if(!dsa){await carica('lib/gelasio.js');for(const [st,k] of [['normal','normal'],['bold','bold'],['italic','italic'],['bolditalic','bolditalic']]){doc.addFileToVFS('Gelasio-'+k+'.ttf',GELASIO[k]);doc.addFont('Gelasio-'+k+'.ttf','Gelasio',st)}F='Gelasio'}
+  const PW=210,PH=297,M=dsa?20:19,LW=PW-2*M,base=dsa?14:11.5,lh=dsa?1.55:1.4;let y=M+4;const mm=pt=>pt*0.3528;
+  const nuova=hh=>{if(y+hh>PH-M){doc.addPage();y=M}};
+  const st=o=>o.b&&o.i?'bolditalic':o.b?'bold':o.i?'italic':'normal';
+  const scrivi=(t,o={})=>{const sz=o.sz||base;doc.setFont(F,st(o));doc.setFontSize(sz);const ind=o.ind||0;const L=doc.splitTextToSize(String(t),LW-ind);const hh=L.length*mm(sz)*lh;
+    nuova(hh+(o.keep||0));doc.text(L,o.al==='center'?PW/2:o.al==='right'?PW-M:M+ind,y+mm(sz),{align:o.al||'left',lineHeightFactor:lh});y+=hh+(o.aft??mm(sz)*0.45)};
+  const testa=()=>{doc.setFont(F,'bold');doc.setFontSize(base);doc.text('Name:',M,y+mm(base));doc.text('Class:',M+LW*0.52,y+mm(base));doc.text('Date:',M+LW*0.78,y+mm(base));y+=mm(base)*lh};
+  const riga=()=>{const g=dsa?11:9;nuova(g);y+=g;doc.setLineWidth(0.25);doc.line(M,y,PW-M,y)};
+  if(!soloFoglio){
+    testa();y+=12;scrivi(vf.titoloFoglio||vf.titolo,{b:true,al:'center',aft:10});
+    for(const {b,n} of blocchiStampa(vf,dsa)){const its=itemsDi(b,dsa);
+      scrivi(n+'. '+(b.consegna||''),{b:true,keep:mm(base)*lh*2,aft:2.5});
+      if(b.banca)scrivi(b.banca,{aft:2});if(b.esempio)scrivi('Example: '+b.esempio,{i:true,aft:2});
+      if(b.tipo==='testo'){for(let r=0;r<(b.righe??10);r++)riga();y+=2}
+      else for(const it of its){const k=b.items.indexOf(it)+1;
+        if(b.tipo==='mc'){scrivi(`${k}. ${it.testo||''}`,{keep:mm(base)*lh,aft:1});doc.setFont(F,'normal');doc.setFontSize(base);
+          const T=it.opz.map((o,q)=>`${LETT[q]}) ${o||''}`);const W0=LW-8;const lw=Math.max(...T.map(t=>doc.getTextWidth(t)))+4;const nc=lw<=W0/4?4:lw<=W0/2?2:1;const col=W0/nc;
+          for(let q=0;q<T.length;q+=nc){const righe=T.slice(q,q+nc).map(t=>doc.splitTextToSize(t,col-3));const hh=Math.max(...righe.map(r=>r.length))*mm(base)*lh;nuova(hh);
+            righe.forEach((r,z)=>doc.text(r,M+8+z*col,y+mm(base),{lineHeightFactor:lh}));y+=hh}y+=dsa?4:3}
+        else if(b.tipo==='vf'){scrivi(`${k}. ${it.testo||''}`,{aft:0});doc.setFont(F,'bold');doc.text('T     F',PW-M,y-mm(base)*0.3,{align:'right'});y+=dsa?3:2}
+        else if(b.tipo==='righe'){scrivi(`${k}. ${it.testo||''}`,{keep:dsa?12:10,aft:0});for(let r=0;r<(b.righe??1);r++)riga();y+=3}
+        else scrivi(`${k}  ${it.testo||''}`,{aft:dsa?3:1.5})}
+      y+=2;scrivi('__/'+fmt(maxBlocco(b,dsa)),{b:true,al:'right',aft:dsa?12:9});
+    }
+  }
+  if(itemsFoglio(vf,dsa).length){const g=await pngGriglia(vf,dsa);if(!soloFoglio)doc.addPage();y=M;
+    scrivi('Answer sheet – '+(vf.titoloFoglio||vf.titolo),{b:true,sz:base+2});testa();y+=3;
+    scrivi('Fill in the circle of the right answer (or draw a clear X inside it). Do not write on the black squares.',{i:true,sz:base-1.5,aft:5});
+    let gw=LW,gh=gw*g.h/g.w;if(y+gh>PH-M){gh=PH-M-y;gw=gh*g.w/g.h}doc.addImage(g.url,'PNG',(PW-gw)/2,y,gw,gh,undefined,'FAST')}
+  const nome=`${soloFoglio?'Foglio risposte':'Verifica'} ${vf.titolo} ${c.nome}${dsa?' PDP-PEI':''}`.replace(/[\/:*?"<>|.]/g,'-').replace(/\s+/g,' ').trim()+'.pdf';
+  return salvaFile(nome,doc.output('blob'));
+}
+
 function vVerifiche(c){
   const vs=[...c.verifiche].sort((a,b)=>b.data.localeCompare(a.data));
   return `<section class="block"><div class="block-h"><h2>Verifiche</h2>${ui.conferma==='nuovaVer'?'':'<button class="btn" data-act="conf" data-v="nuovaVer">+ Nuova verifica</button>'}</div>
@@ -1499,7 +1822,8 @@ function vVerifiche(c){
   <div><label class="lbl" for="nvD">Data</label><input type="date" id="nvD" value="${iso(new Date())}"></div></div>
   <div class="row2"><div><label class="lbl" for="nvN">Quanti esercizi</label><input type="number" id="nvN" min="1" max="30" value="5" inputmode="numeric"></div>
   <div><label class="lbl" for="nvP">Punti per esercizio</label><input type="number" id="nvP" min="0.5" step="0.5" value="10" inputmode="decimal"></div></div>
-  <p class="muted sm">Nomi e punti dei singoli esercizi si cambiano dopo.</p>
+  <div class="row2"><div><label class="lbl" for="nvTipo">Come la correggi</label><select id="nvTipo"><option value="es">Esercizi con punteggio</option><option value="dom">Esercizi come nelle tue verifiche: scelta multipla, True/False, completamento, righe, scrittura</option></select></div></div>
+  <p class="muted sm">Con “Esercizi” la scrivi qui e la stampi nel tuo stile, oppure carichi il PDF e inserisci solo la chiave delle crocette: scelta multipla e True/False si correggono toccando le risposte o con la foto del foglio.</p>
   <div class="btns"><button class="btn primary" data-act="addVer">Crea verifica</button><button class="btn ghost" data-act="conf" data-v="">Annulla</button></div></div>`:''}
   ${vs.length?`<ul class="docs">${vs.map(vf=>{const es=c.alunni.map(a=>esito(vf,a.id)).filter((x,i)=>!(vf.assenti||[]).includes(c.alunni[i].id));const ok=es.filter(x=>x.completo);
     const media=ok.length?ok.reduce((t,x)=>t+x.pct,0)/ok.length:null;
@@ -1515,18 +1839,22 @@ function vVerifica(c){
   <p class="count" id="verSum">${sommario(c,vf)}</p>
   <button class="link" data-act="verEdit">${ui.verEdit?'Chiudi modifica esercizi':'Modifica titolo ed esercizi'}</button>`;
   if(ui.verEdit)h+=`<div class="form"><div class="row2"><div><label class="lbl" for="veT">Titolo</label><input type="text" id="veT" value="${esc(vf.titolo)}" data-chg="veT"></div><div><label class="lbl" for="veD">Data</label><input type="date" id="veD" value="${vf.data}" data-chg="veD"></div></div>
-  <ul class="esedit">${vf.esercizi.map(e=>`<li><input type="text" value="${esc(e.nome)}" data-chg="esNome" data-v="${e.id}" aria-label="Nome esercizio"><input type="number" step="0.5" min="0" value="${e.max}" data-chg="esMax" data-v="${e.id}" aria-label="Punti massimi" inputmode="decimal"><span class="muted sm">punti</span><button class="icon" data-act="rmEs" data-v="${e.id}" aria-label="Elimina esercizio">×</button></li>`).join('')}</ul>
-  <div class="btns"><button class="link" data-act="addEs">+ Esercizio</button></div>
+  ${vf.esx?'':`<ul class="esedit">${vf.esercizi.map(e=>`<li><input type="text" value="${esc(e.nome)}" data-chg="esNome" data-v="${e.id}" aria-label="Nome esercizio"><input type="number" step="0.5" min="0" value="${e.max}" data-chg="esMax" data-v="${e.id}" aria-label="Punti massimi" inputmode="decimal"><span class="muted sm">punti</span><button class="icon" data-act="rmEs" data-v="${e.id}" aria-label="Elimina esercizio">×</button></li>`).join('')}</ul>
+  <div class="btns"><button class="link" data-act="addEs">+ Esercizio</button>${Object.values(vf.punti||{}).some(p=>Object.keys(p).length)?'':'<button class="link" data-act="verDom">Passa a esercizi strutturati (crocette, completamento, righe…)</button>'}</div>`}
   <div class="reset">${ui.conferma==='rmVer'?`<span class="warn-t">Eliminare la verifica e i punteggi?</span><button class="btn bad sm" data-act="rmVer">Elimina</button><button class="btn ghost sm" data-act="conf" data-v="">Annulla</button>`:'<button class="link bad" data-act="conf" data-v="rmVer">Elimina verifica</button>'}</div></div>`;
+  h+=`<div class="allegati"><span class="lbl">Testo della verifica</span>${(vf.files||[]).map(f=>`<div class="all"><button class="link" data-act="allApri" data-v="${f.id}">📄 ${esc(f.nome)}</button><span class="muted sm">${f.size>1e6?fmt(Math.round(f.size/1e5)/10)+' MB':Math.max(1,Math.round(f.size/1e3))+' KB'}</span>${ui.conferma==='allRm'+f.id?`<button class="link bad sm" data-act="allRm" data-v="${f.id}">Togli</button><button class="link sm" data-act="conf" data-v="">No</button>`:`<button class="icon" data-act="conf" data-v="allRm${f.id}" aria-label="Togli">×</button>`}</div>`).join('')}
+    <label class="btn sm carica ${ui.caricando?'disabled':''}"><input type="file" accept="application/pdf,image/*" data-chg="allUp" hidden ${ui.caricando?'disabled':''}>${ui.caricando?'Carico…':'+ Carica PDF o foto'}</label>
+    <p class="muted sm">Si apre di lato mentre inserisci i voti. È cifrato come gli altri dati${CLOUD.ref?' e lo vedi su tutti i tuoi dispositivi':''}.</p></div>`;
   const conPiano=al.filter(a=>a.piano&&!ass.includes(a.id));
   if(conPiano.length)h+=`<div class="note misure"><b>Misure da applicare</b>${conPiano.map(a=>`<div><b>${esc(a.nome)}</b> <span class="tag ${a.piano.tipo==='PEI'?'t-P':'t-D'}">${a.piano.tipo}</span> ${esc(misureVerifica(a.piano).join(' · ')||'nessuna misura sulle verifiche segnata nel piano')}</div>`).join('')}</div>`;
-  h+=`</section><section class="block"><h2>Punteggi</h2><p class="muted sm">Scrivi i punti di ogni esercizio: il voto si calcola da solo. Per chi ha PDP o PEI tocca “Ridotta” e togli gli esercizi che per lui non contano.</p>
+  h+=`</section>${vf.esx?vEsercizi(c,vf):''}<section class="block"><h2>${vf.esx?'Correzione':'Punteggi'}</h2><p class="muted sm">${vf.esx?'Scelta multipla e True/False: tocca la risposta data dall\'alunno (verde giusta, rosso sbagliata) oppure usa la foto del foglio risposte. Gli altri esercizi: scrivi i punti presi.':'Scrivi i punti di ogni esercizio: il voto si calcola da solo.'} Per chi ha PDP o PEI tocca “Ridotta”: ${vf.esx?'scegli se usa la versione PDP/PEI e quali esercizi contano':'togli gli esercizi che per lui non contano'}.</p>
+  <input type="file" accept="image/*" capture="environment" id="omrFile" data-chg="omrFile" hidden>
   <ul class="schede">${al.map(a=>{const assente=ass.includes(a.id);const e=esito(vf,a.id);const r=vf.rid?.[a.id]||[];const p=vf.punti?.[a.id]||{};const aperta=ui.ridAl===a.id;
     return `<li class="scheda ${assente?'assente':''}" id="sc-${a.id}"><div class="sc-h"><span class="who">${esc(a.nome)}</span>${a.bes?'<span class="tag t-P">PDP/PEI</span>':''}${e.ridotta?'<span class="tag t-R">Ridotta</span>':''}
       <span class="sc-voto" id="vt-${a.id}">${assente?'Assente':e.completo?`<b class="voto">${esc(e.voto)}</b> <span class="muted sm">${fmt(e.tot)}/${fmt(e.max)}</span>`:e.iniziato?`<span class="muted sm">${fmt(e.tot)}/${fmt(e.max)}…</span>`:''}</span></div>
-      ${assente?'':`<div class="punti">${vf.esercizi.map((x,i)=>{const fuori=r.includes(x.id);return `<label class="pt ${fuori?'fuori':''}"><span>${esc(x.nome)}<small>/${fmt(x.max)}</small></span><input type="text" inputmode="decimal" value="${fuori?'':esc(p[x.id]??'')}" ${fuori?'disabled':''} data-al="${a.id}" data-es="${x.id}" class="pin" aria-label="${esc(a.nome)} ${esc(x.nome)}"></label>`}).join('')}</div>`}
+      ${assente?'':vf.esx?vRispAl(c,vf,a,r,ass):`<div class="punti">${vf.esercizi.map((x,i)=>{const fuori=r.includes(x.id);return `<label class="pt ${fuori?'fuori':''}"><span>${esc(x.nome)}<small>/${fmt(x.max)}</small></span><input type="text" inputmode="decimal" value="${fuori?'':esc(p[x.id]??'')}" ${fuori?'disabled':''} data-al="${a.id}" data-es="${x.id}" class="pin" aria-label="${esc(a.nome)} ${esc(x.nome)}"></label>`}).join('')}</div>`}
       <div class="sc-az"><button class="link sm" data-act="assente" data-v="${a.id}">${assente?'Era presente':'Assente'}</button>${assente?'':`<button class="link sm" data-act="ridAl" data-v="${a.id}">${aperta?'Chiudi':'Ridotta'}</button>`}</div>
-      ${aperta&&!assente?`<div class="rid"><span class="lbl">Esercizi che contano per ${esc(a.nome)}</span><div class="checks row">${vf.esercizi.map(x=>`<label class="chk"><input type="checkbox" data-chg="rid" data-al="${a.id}" data-v="${x.id}" ${r.includes(x.id)?'':'checked'}> ${esc(x.nome)}</label>`).join('')}</div>
+      ${aperta&&!assente?`<div class="rid">${vf.esx?`<label class="tog"><input type="checkbox" data-chg="dsaAl" data-al="${a.id}" ${usaDsa(vf,a.id)?'checked':''}><span>Ha la versione PDP/PEI (senza le frasi tolte)</span></label>`:''}<span class="lbl">Esercizi che contano per ${esc(a.nome)}</span><div class="checks row">${vf.esercizi.map(x=>`<label class="chk"><input type="checkbox" data-chg="rid" data-al="${a.id}" data-v="${x.id}" ${r.includes(x.id)?'':'checked'}> ${esc(x.nome)}</label>`).join('')}</div>
       <label class="tog"><input type="checkbox" data-chg="bes" data-al="${a.id}" ${a.bes?'checked':''}><span>Ha PDP o PEI (lo segnalo nelle prossime verifiche)</span></label></div>`:''}</li>`}).join('')}</ul></section>`;
   const pronti=ok.length;
   h+=`<section class="block export"><h2>Voti</h2><p class="muted">${vf.registrati?'I voti sono già tra i voti della classe. Se cambi un punteggio, registrali di nuovo per aggiornarli.':'Porta i voti calcolati tra i voti della classe, da dove li copi per il registro.'}</p>
@@ -1624,7 +1952,7 @@ document.addEventListener('click',e=>{
       S.sostEsclusi=S.sostEsclusi||[];let n=0;L.forEach((c,i)=>{if(sel.has(i)){S.classi.push({...nuovaClasse(c.nome,c.ordine||'medie',c.materia||''),daSost:true});n++}else S.sostEsclusi.push(k(c))});
       ui.sostScelta=null;save();toast(n?`Aggiunt${n===1?'a 1 classe':'e '+n+' classi'}`:'Nessuna classe aggiunta');break}
     case 'oggiVai':ui.oggiData=v||null;break;
-    case 'apriVer':ui.tab='classi';ui.classe=v;ui.sez='verifiche';ui.ver=b.dataset.ver;ui.alunno=null;window.scrollTo(0,0);break;
+    case 'oggiVer':ui.tab='classi';ui.classe=v;ui.sez='verifiche';ui.ver=b.dataset.ver;ui.alunno=null;window.scrollTo(0,0);break;
     case 'addNota':{const a=c.alunni.find(x=>x.id===ui.alunno);const t=val('ntTesto').trim();if(!t){toast('Scrivi la nota');return}ui.ntTipo=val('ntTipo');
       (a.note=a.note||[]).push({id:uid(),tipo:ui.ntTipo||'altro',data:val('ntData')||iso(new Date()),testo:t});save();toast('Nota salvata');break}
     case 'rmNota':{const a=c.alunni.find(x=>x.id===ui.alunno);a.note=(a.note||[]).filter(n=>n.id!==v);save();break}
@@ -1650,14 +1978,41 @@ document.addEventListener('click',e=>{
     case 'noCinque':ui.proposta=null;break;
     case 'rmDim':{const cc=classe(ui.classe);cc.dim=cc.dim.filter(d=>d.id!==v);save();break}
     case 'addVer':{const t=val('nvT').trim()||'Verifica';const n=Math.max(1,Math.min(30,parseInt(val('nvN'))||1));const pt=num(val('nvP'))||10;
-      const vf={id:uid(),titolo:t,data:val('nvD')||iso(new Date()),esercizi:Array.from({length:n},(_,i)=>({id:uid(),nome:'Es. '+(i+1),max:pt})),punti:{},rid:{},assenti:[]};
+      const dom=val('nvTipo')==='dom';
+      const vf={id:uid(),titolo:t,data:val('nvD')||iso(new Date()),esercizi:dom?[]:Array.from({length:n},(_,i)=>({id:uid(),nome:'Es. '+(i+1),max:pt})),punti:{},rid:{},assenti:[]};
+      if(dom){vf.esx=[];vf.risp={};vf.letto={};ui.domEdit=true}
       c.verifiche.push(vf);ui.conferma=null;ui.ver=vf.id;ui.verEdit=false;save();window.scrollTo(0,0);break}
     case 'apriVer':ui.ver=v;ui.verEdit=false;ui.ridAl=null;window.scrollTo(0,0);break;
-    case 'chiudiVer':ui.ver=null;ui.verEdit=false;break;
+    case 'chiudiVer':ui.ver=null;ui.verEdit=false;chiudiViewer();break;
+    case 'vwChiudi':chiudiViewer();return;
+    case 'allApri':{const vf=c.verifiche.find(x=>x.id===ui.ver);const f=(vf.files||[]).find(x=>x.id===v);if(f)apriAllegato(f);return}
+    case 'allRm':{const vf=c.verifiche.find(x=>x.id===ui.ver);const f=(vf.files||[]).find(x=>x.id===v);vf.files=(vf.files||[]).filter(x=>x.id!==v);ui.conferma=null;save();if(f)eliminaAllegato(f);chiudiViewer();break}
+    case 'verDom':{const vf=c.verifiche.find(x=>x.id===ui.ver);vf.esx=[];vf.risp={};vf.letto={};vf.esercizi=[];ui.domEdit=true;ui.verEdit=false;save();break}
+    case 'domEdit':ui.domEdit=!ui.domEdit;break;
+    case 'bAdd':{const vf=c.verifiche.find(x=>x.id===ui.ver);vf.esx.push(nuovoBlocco(v));syncEsercizi(c,vf);save();break}
+    case 'bSu':case 'bGiu':{const vf=c.verifiche.find(x=>x.id===ui.ver);const i=vf.esx.findIndex(x=>x.id===b.dataset.b);const j=i+(A==='bSu'?-1:1);if(i<0||j<0||j>=vf.esx.length)return;[vf.esx[i],vf.esx[j]]=[vf.esx[j],vf.esx[i]];syncEsercizi(c,vf);save();break}
+    case 'bRm':{const vf=c.verifiche.find(x=>x.id===ui.ver);vf.esx=vf.esx.filter(x=>x.id!==b.dataset.b);syncEsercizi(c,vf);save();break}
+    case 'iAdd':{const vf=c.verifiche.find(x=>x.id===ui.ver);const B=vf.esx.find(x=>x.id===b.dataset.b);const it=nuovoItem(B);const prev=B.items[B.items.length-1];if(B.tipo==='mc'&&prev)it.opz=prev.opz.map(()=>'');B.items.push(it);syncEsercizi(c,vf);save();break}
+    case 'iRm':{const vf=c.verifiche.find(x=>x.id===ui.ver);const B=vf.esx.find(x=>x.id===b.dataset.b);B.items=B.items.filter(x=>x.id!==b.dataset.i);syncEsercizi(c,vf);save();break}
+    case 'iOpzAdd':case 'iOpzRm':{const vf=c.verifiche.find(x=>x.id===ui.ver);const B=vf.esx.find(x=>x.id===b.dataset.b);const it=B.items.find(x=>x.id===b.dataset.i);
+      if(A==='iOpzAdd'&&it.opz.length<6)it.opz.push('');if(A==='iOpzRm'&&it.opz.length>2){it.opz.pop();if(it.ok>=it.opz.length)it.ok=null}save();break}
+    case 'iOkB':{const vf=c.verifiche.find(x=>x.id===ui.ver);const B=vf.esx.find(x=>x.id===b.dataset.b);const it=B.items.find(x=>x.id===b.dataset.i);it.ok=it.ok===+v?null:+v;save();break}
+    case 'iIncOpen':ui.incolla=b.dataset.b||null;break;
+    case 'iInc':{const vf=c.verifiche.find(x=>x.id===ui.ver);const B=vf.esx.find(x=>x.id===b.dataset.b);const n=incolla(B,val('incTxt'));ui.incolla=null;syncEsercizi(c,vf);save();toast(n?`Aggiunte ${n} frasi`:'Niente da aggiungere');break}
+    case 'domChiave':{const vf=c.verifiche.find(x=>x.id===ui.ver);const n=Math.max(1,Math.min(60,parseInt(val('qkN'))||1));const no=+val('qkO')||4;const pt=num(val('qkP'))||1;
+      const B={id:uid(),tipo:no===2?'vf':'mc',consegna:no===2?CONSEGNE.vf[0]:CONSEGNE.mc[0],esempio:'',banca:'',pt,items:[]};for(let i=0;i<n;i++)B.items.push(no===2?{id:uid(),testo:'',ok:null}:{id:uid(),testo:'',opz:Array(no).fill(''),ok:null});
+      vf.esx.push(B);syncEsercizi(c,vf);save();toast(`Aggiunte ${n} domande: ora tocca le lettere giuste qui sotto`);break}
+    case 'risp':{const vf=c.verifiche.find(x=>x.id===ui.ver);const al=b.dataset.al,did=b.dataset.d;vf.risp=vf.risp||{};const r=vf.risp[al]=vf.risp[al]||{};r[did]=r[did]===+v?null:+v;if(r[did]==null)delete r[did];
+      vf.letto=vf.letto||{};(vf.letto[al]=vf.letto[al]||{})[b.dataset.b]=true;if(ui.omrDubbi?.[al])ui.omrDubbi[al]=ui.omrDubbi[al].filter(x=>x!==did);save();break}
+    case 'tuttoVuoto':{const vf=c.verifiche.find(x=>x.id===ui.ver);vf.letto=vf.letto||{};(vf.letto[b.dataset.al]=vf.letto[b.dataset.al]||{})[b.dataset.b]=true;save();break}
+    case 'omrAl':{ui.omrPer=v;const inp=document.getElementById('omrFile');if(inp){inp.value='';inp.click()}return}
+    case 'stampaV':{const vf=c.verifiche.find(x=>x.id===ui.ver);if(!vf.esx.length){toast('Aggiungi prima gli esercizi');return}const dsa=/dsa/.test(v);
+      const fn=v==='foglio'?wordVerifica(c,vf,false,true):/^pdf/.test(v)?pdfVerifica(c,vf,dsa,false):wordVerifica(c,vf,dsa,false);
+      Promise.resolve(fn).catch(e=>toast('Non riuscito: '+(e.message||e)));return}
     case 'verEdit':ui.verEdit=!ui.verEdit;break;
     case 'addEs':{const vf=c.verifiche.find(x=>x.id===ui.ver);const last=vf.esercizi[vf.esercizi.length-1];vf.esercizi.push({id:uid(),nome:'Es. '+(vf.esercizi.length+1),max:last?last.max:10});save();break}
     case 'rmEs':{const vf=c.verifiche.find(x=>x.id===ui.ver);vf.esercizi=vf.esercizi.filter(x=>x.id!==v);save();break}
-    case 'rmVer':c.verifiche=c.verifiche.filter(x=>x.id!==ui.ver);c.voti=c.voti.filter(x=>x.verifica!==ui.ver);ui.ver=null;ui.conferma=null;save();break;
+    case 'rmVer':{const vf0=c.verifiche.find(x=>x.id===ui.ver);(vf0?.files||[]).forEach(eliminaAllegato);chiudiViewer()}c.verifiche=c.verifiche.filter(x=>x.id!==ui.ver);c.voti=c.voti.filter(x=>x.verifica!==ui.ver);ui.ver=null;ui.conferma=null;save();break;
     case 'assente':{const vf=c.verifiche.find(x=>x.id===ui.ver);vf.assenti=vf.assenti||[];vf.assenti=vf.assenti.includes(v)?vf.assenti.filter(x=>x!==v):[...vf.assenti,v];save();break}
     case 'ridAl':ui.ridAl=ui.ridAl===v?null:v;break;
     case 'regVer':{const vf=c.verifiche.find(x=>x.id===ui.ver);let n=0;
@@ -1734,7 +2089,7 @@ document.addEventListener('change',e=>{
     case 'aNome':{const a=c.alunni.find(x=>x.id===ui.alunno);if(a&&t.value.trim()){a.nome=t.value.trim();save()}break}
     case 'argOn':{const a=c.argomenti.find(x=>x.id===t.dataset.v);if(a){a.fatto=t.checked?iso(new Date()):null;save()}break}
     case 'bes':{const a=c.alunni.find(x=>x.id===t.dataset.al);if(a){a.bes=t.checked;save()}break}
-    case 'rid':{const vf=c.verifiche.find(x=>x.id===ui.ver);vf.rid=vf.rid||{};const r=vf.rid[t.dataset.al]||[];
+    case 'rid':{const vf=c.verifiche.find(x=>x.id===ui.ver);vf.rid=vf.rid||{};vf.ridMan=vf.ridMan||{};vf.ridMan[t.dataset.al]=true;const r=vf.rid[t.dataset.al]||[];
       vf.rid[t.dataset.al]=t.checked?r.filter(x=>x!==t.dataset.v):[...r,t.dataset.v];if(!vf.rid[t.dataset.al].length)delete vf.rid[t.dataset.al];save();break}
     case 'veT':{const vf=c.verifiche.find(x=>x.id===ui.ver);if(t.value.trim()){vf.titolo=t.value.trim();save()}break}
     case 'veD':{const vf=c.verifiche.find(x=>x.id===ui.ver);if(t.value){vf.data=t.value;save()}break}
@@ -1756,6 +2111,27 @@ document.addEventListener('change',e=>{
     case 'pScuola':S.scuola=t.value.trim();save();return;
     case 'argMese':{const a=c.argomenti.find(x=>x.id===t.dataset.v);if(a){a.mese=t.value||null;save()}return}
     case 'oggiData':if(t.value){ui.oggiData=t.value}break;
+    case 'allUp':{const f=t.files[0];if(!f)return;const vf=c.verifiche.find(x=>x.id===ui.ver);ui.caricando=true;render();
+      salvaAllegato(f).then(m=>{vf.files=[...(vf.files||[]),m];ui.caricando=false;save();render();apriAllegato(m)}).catch(e=>{ui.caricando=false;toast(e.message||String(e));render()});return}
+    case 'vfTit':{const vf=c.verifiche.find(x=>x.id===ui.ver);vf.titoloFoglio=t.value;save();return}
+    case 'dsaAl':{const vf=c.verifiche.find(x=>x.id===ui.ver);vf.dsa=vf.dsa||{};vf.dsaMan=vf.dsaMan||{};vf.dsaMan[t.dataset.al]=true;if(t.checked)vf.dsa[t.dataset.al]=true;else delete vf.dsa[t.dataset.al];if(vf.ridMan)delete vf.ridMan[t.dataset.al];syncEsercizi(c,vf);save();break}
+    case 'bTipo':case 'bPt':case 'bMax':case 'bCons':case 'bBanca':case 'bEs':case 'bRighe':case 'bDsa':{const vf=c.verifiche.find(x=>x.id===ui.ver);const B=vf.esx.find(x=>x.id===t.dataset.b);if(!B)return;
+      if(C==='bCons'){B.consegna=t.value;save();return}if(C==='bBanca'){B.banca=t.value;save();return}if(C==='bEs'){B.esempio=t.value;save();return}
+      if(C==='bTipo'){const nb=nuovoBlocco(t.value);B.tipo=nb.tipo;B.consegna=CONSEGNE[nb.tipo][0];B.righe=nb.righe;B.max=nb.max;B.items=nb.tipo==='testo'?[]:B.items.map(it=>nb.tipo==='mc'?{id:it.id,testo:it.testo,opz:it.opz||['','','',''],ok:null,noDsa:it.noDsa}:{id:it.id,testo:it.testo,ok:null,noDsa:it.noDsa});if(!B.items.length&&nb.tipo!=='testo')B.items=nb.items}
+      if(C==='bPt'||C==='bMax'){const n=num(t.value);if(n==null||n<0){toast('Scrivi un numero');return}if(C==='bPt')B.pt=n;else B.max=n}
+      if(C==='bRighe')B.righe=Math.max(1,Math.min(40,parseInt(t.value)||1));if(C==='bDsa')B.noDsa=t.checked;
+      syncEsercizi(c,vf);save();break}
+    case 'iTesto':case 'iDsa':case 'iOk':case 'iOpz':{const vf=c.verifiche.find(x=>x.id===ui.ver);const B=vf.esx.find(x=>x.id===t.dataset.b);const it=B?.items.find(x=>x.id===t.dataset.i);if(!it)return;
+      if(C==='iTesto'){it.testo=t.value;save();return}if(C==='iOpz'){it.opz[+t.dataset.k]=t.value;save();return}
+      if(C==='iOk')it.ok=+t.value;if(C==='iDsa')it.noDsa=t.checked;syncEsercizi(c,vf);save();break}
+    case 'omrFile':{const f=t.files[0];if(!f)return;const vf=c.verifiche.find(x=>x.id===ui.ver);const a=c.alunni.find(x=>x.id===ui.omrPer);if(!vf||!a)return;
+      const its=itemsFoglio(vf,usaDsa(vf,a.id));const L=layoutGriglia(its);toast('Leggo il foglio di '+a.nome+'…');
+      leggiFoglio(f,L).then(ris=>{vf.risp=vf.risp||{};const r=vf.risp[a.id]={...(vf.risp[a.id]||{})};const dub=[];let n=0;vf.letto=vf.letto||{};const lt=vf.letto[a.id]=vf.letto[a.id]||{};
+        for(const it of its)lt[it.b.id]=true;
+        for(const [q,x] of Object.entries(ris)){if(x.ans==null)delete r[q];else{r[q]=x.ans;n++}if(x.dubbio)dub.push(q)}
+        ui.omrDubbi=ui.omrDubbi||{};ui.omrDubbi[a.id]=dub;save();render();
+        const el=document.getElementById('sc-'+a.id);if(el)el.scrollIntoView({block:'center'});
+        toast(`${a.nome}: lette ${n} risposte${dub.length?`, ${dub.length} da controllare in giallo`:''}`)}).catch(e=>toast(e.message||String(e)));return}
     case 'progT':{const k=t.dataset.k,m=t.dataset.m;if(t.dataset.f){c.prog.fin=c.prog.fin||{};c.prog.fin[k]=t.value;save();return}if(m){c.prog.mesi[m]=c.prog.mesi[m]||{};c.prog.mesi[m][k]=t.value}else c.prog.ann[k]=t.value;save();return}
     case 'progMese':ui.progMese=t.value;break;
     case 'pNome':S.profilo.nome=t.value.trim();save();break;
