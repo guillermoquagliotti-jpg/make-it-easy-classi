@@ -337,7 +337,7 @@ function seed(){
   const cl=(nome,ordine)=>({id:uid(),nome,ordine,materia:'Inglese',alunni:[],agenda:[],dim:[],voti:[],argomenti:[],verifiche:[]});
   return {v:1,profilo:{nome:'',foto:null,accento:'#9a7bd6'},soglia:3,
     quad:[{nome:'1° quadrimestre',da:`${y}-09-01`,a:`${y+1}-01-31`},{nome:'2° quadrimestre',da:`${y+1}-02-01`,a:`${y+1}-06-30`}],
-    classi:[cl('1A','medie'),cl('2A','medie'),cl('3A','medie'),cl('1A','primaria'),cl('1B','primaria'),cl('2A','primaria'),cl('2B','primaria')],
+    classi:[],
     mod:null};
 }
 let S=null;try{S=JSON.parse(lget(KEY))}catch(e){}
@@ -453,6 +453,22 @@ async function cambiaFrase(){
     ui.lavoro=false;ui.conferma=null;save();await pushNow();toast('Frase cambiata. Sugli altri dispositivi ti verrà chiesta la nuova.');render();
   }catch(e){ui.lavoro=false;toast('La frase attuale non è corretta');render()}
 }
+/* Classi dalle Sostituzioni: l'amministratore collega l'email a un docente, l'app di Sostituzioni copia lì le sue classi */
+const nuovaClasse=(nome,ordine,materia)=>({id:uid(),nome,ordine,materia,alunni:[],agenda:[],dim:[],voti:[],argomenti:[],verifiche:[]});
+async function daSostituzioni(auto){
+  if(!CLOUD.user){if(!auto)toast('Serve l\'accesso');return 0}
+  const email=(CLOUD.user.email||'').toLowerCase();let lista=null,motivo='';
+  try{const q=await firebase.firestore().collection('scuole').where('emails','array-contains',email).limit(1).get();
+    if(q.empty)motivo='La tua email non è nell\'elenco delle Sostituzioni della scuola.';
+    else{const r=q.docs[0].data().membri?.[email];lista=r?.classi||null;if(!r?.docente)motivo='Nelle Sostituzioni la tua email non è collegata a un docente: chiedilo a chi le gestisce (Impostazioni → Persone).';else if(!lista||!lista.length)motivo='Nell\'orario delle Sostituzioni non risultano classi per te (oppure l\'amministratore non ha ancora aperto l\'app dopo l\'aggiornamento).'}}
+  catch(e){motivo='Non riesco a leggere le Sostituzioni ('+(e.code||e.message)+').'}
+  if(!lista||!lista.length){if(!auto)toast(motivo);return 0}
+  const k=c=>[c.nome,c.ordine,c.materia].map(x=>String(x||'').trim().toLowerCase()).join('|');const ci=new Set(S.classi.map(k));let n=0;
+  for(const c of lista){if(!ci.has(k(c))){S.classi.push(nuovaClasse(c.nome,c.ordine||'medie',c.materia||''));ci.add(k(c));n++}}
+  if(n){save();render()}
+  if(!auto||n)toast(n?`Aggiunt${n===1?'a 1 classe':'e '+n+' classi'} dalle Sostituzioni`:'Hai già tutte le classi delle Sostituzioni');
+  return n;
+}
 function nuovoAnno(tieni){
   const piu=d=>d?(+d.slice(0,4)+1)+d.slice(4):d;
   S.quad.forEach(q=>{q.da=piu(q.da);q.a=piu(q.a)});
@@ -470,7 +486,7 @@ async function impostaFrase(nuova){
     CLOUD.lavoro=true;render();
     const salt=b64(crypto.getRandomValues(new Uint8Array(16)));CLOUD.salt=salt;lset(SALT,salt);
     const k=await deriva(f1,salt);CLOUD.key=k;await chiaveSet(CLOUD.user.uid,k);lset(LINK,CLOUD.user.uid);
-    CLOUD.lavoro=false;save();await pushNow();render();return;
+    CLOUD.lavoro=false;save();await pushNow();render();if(!S.classi.length)daSostituzioni(true);return;
   }
   const r=CLOUD.remote;if(!r||!r.salt)return;
   CLOUD.lavoro=true;render();
@@ -546,13 +562,13 @@ function vClassi(){
   const gb=S.ultimoBackup?Math.floor((Date.now()-parseD(S.ultimoBackup))/864e5):null;
   const promem=CLOUD.key&&(gb==null||gb>30)?`<div class="note warn promem"><span>${gb==null?'Non hai ancora un backup cifrato dei tuoi dati.':`Ultimo backup cifrato ${gb} giorni fa.`}</span><button class="btn sm" data-act="bkCifrato">Scaricalo ora</button></div>`:'';
   return `${promem}${sc.length?`<section class="block scad"><h2>Scadenze PDP/PEI</h2><ul class="wlist">${sc.map(x=>`<li><span class="t ${x.giorni<0?'warn-t':''}">${dBreve(x.data)}</span><span class="w"><span class="tag ${x.tipo==='PEI'?'t-P':'t-D'}">${x.tipo}</span><span>${esc(x.cosa)} · ${esc(x.alunno)} · ${esc(x.classe)}</span></span><button class="link sm" data-act="apriPiano" data-c="${x.cid}" data-v="${x.aid}">Apri</button></li>`).join('')}</ul></section>`:''}
-  <section class="block"><div class="block-h"><h2>Le tue classi</h2><button class="btn" data-act="conf" data-v="nuovaClasse">+ Nuova classe</button></div>
+  <section class="block"><div class="block-h"><h2>Le tue classi</h2><span class="btns"><button class="btn" data-act="daSost" title="Aggiunge le classi dell'orario delle Sostituzioni che ancora mancano">Dalle Sostituzioni</button><button class="btn" data-act="conf" data-v="nuovaClasse">+ Nuova classe</button></span></div>
   ${ui.conferma==='nuovaClasse'?`<div class="form"><div class="row2"><div><label class="lbl" for="ncNome">Classe</label><input type="text" id="ncNome" placeholder="Es. 3A" autocomplete="off"></div>
   <div><label class="lbl" for="ncOrd">Ordine</label><select id="ncOrd">${Object.entries(ORDINI).map(([k,l])=>`<option value="${k}" ${k==='medie'?'selected':''}>${l}</option>`).join('')}</select></div>
-  <div><label class="lbl" for="ncMat">Materia</label><input type="text" id="ncMat" value="Inglese" autocomplete="off"></div></div>
+  <div><label class="lbl" for="ncMat">Materia</label><input type="text" id="ncMat" value="${esc(S.classi[S.classi.length-1]?.materia||'')}" placeholder="Es. Matematica" autocomplete="off"></div></div>
   <div class="btns"><button class="btn primary" data-act="addClasse">Aggiungi</button><button class="btn ghost" data-act="conf" data-v="">Annulla</button></div></div>`:''}
   ${S.classi.length?`<ul class="docs">${S.classi.map(c=>{const da=c.alunni.filter(a=>contatore(c,a.id,oggi)>=S.soglia).length;const prox=c.agenda.filter(x=>x.data>=oggi).sort((a,b)=>a.data.localeCompare(b.data))[0];
-    return `<li><button class="doc-row" data-act="apri" data-v="${c.id}"><span class="who">${esc(c.nome)}</span>${ordTag(c.ordine)}<span class="muted sm">${esc(c.materia||'')}</span><span class="muted sm">${c.alunni.length} alunni${da?` · <b class="warn-t">${da} da valutare</b>`:''}${prox?` · ${prox.tipo==='verifica'?'verifica':'compito'} ${dBreve(prox.data)}`:''}</span></button></li>`}).join('')}</ul>`:'<p class="empty">Nessuna classe. Aggiungi la prima con “Nuova classe”.</p>'}
+    return `<li><button class="doc-row" data-act="apri" data-v="${c.id}"><span class="who">${esc(c.nome)}</span>${ordTag(c.ordine)}<span class="muted sm">${esc(c.materia||'')}</span><span class="muted sm">${c.alunni.length} alunni${da?` · <b class="warn-t">${da} da valutare</b>`:''}${prox?` · ${prox.tipo==='verifica'?'verifica':'compito'} ${dBreve(prox.data)}`:''}</span></button></li>`}).join('')}</ul>`:'<p class="empty">Nessuna classe. Prendile dall\'orario con “Dalle Sostituzioni” oppure aggiungile con “Nuova classe”.</p>'}
   </section>`;
 }
 
@@ -1450,6 +1466,7 @@ document.addEventListener('click',e=>{
     case 'indietro':ui.classe=null;ui.alunno=null;break;
     case 'sez':ui.sez=v;ui.alunno=null;ui.piano=null;ui.ver=null;break;
     case 'conf':ui.conferma=v||null;break;
+    case 'daSost':daSostituzioni(false);return;
     case 'addClasse':{const n=val('ncNome').trim();if(!n){toast('Scrivi il nome della classe');return}
       S.classi.push({id:uid(),nome:n,ordine:val('ncOrd'),materia:val('ncMat').trim(),alunni:[],agenda:[],dim:[],voti:[],argomenti:[],verifiche:[]});ui.conferma=null;save();break}
     case 'rmClasse':S.classi=S.classi.filter(x=>x.id!==v);ui.conferma=null;save();break;
