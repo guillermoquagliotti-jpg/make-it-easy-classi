@@ -237,6 +237,79 @@ textarea{resize:vertical;font-family:ui-monospace,Menlo,monospace;font-size:.8re
 .top-in{display:flex;align-items:center;gap:10px;justify-content:space-between}
 .vai-app{flex:none;text-decoration:none;font-weight:700;font-size:.85rem;color:var(--accent-strong);background:var(--accent-soft);border-radius:999px;padding:8px 14px;white-space:nowrap}
 .vai-app:active{transform:scale(.97)}
+.or-nomi{margin:.6rem 0;padding:.6rem .7rem;border-radius:12px;background:var(--soft,#f4f0fb)}
+.or-nome{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .8rem;margin:.35rem 0}
+.or-nome span{font-weight:700;min-width:7rem}
+.or-nome select{flex:1;min-width:12rem}
+.conf-sost{flex-basis:100%;margin-top:.4rem;padding:.5rem .7rem;border-radius:10px;background:#fff4e5}
+.conf-sost .btns{margin-top:.4rem}
+.wz-tab{overflow:auto;max-height:55vh;border:1px solid var(--line,#e4dcf3);border-radius:10px;margin:.5rem 0;-webkit-overflow-scrolling:touch}
+.wz-tab table{border-collapse:collapse;font-size:.72rem;white-space:nowrap}
+.wz-tab td{border:1px solid #eee;padding:.15rem .3rem;max-width:7rem;overflow:hidden}
+.wz-tab td.cont{background:#fafafa}
+.wz-tab th{position:sticky;left:0;background:#fff;z-index:1}
+.wz-tab tr.on td{background:#ffe9a8;font-weight:700}
+.wz-r{font:inherit;font-size:.72rem;min-width:2.2rem;min-height:1.8rem;border:1px solid #ccc;border-radius:6px;background:#f6f3fc;cursor:pointer}
+.wz-tab tr.on .wz-r{background:#9a7bd6;color:#fff;border-color:#9a7bd6}
+.wz-cols{list-style:none;padding:0;margin:.5rem 0}
+.wz-cols li{display:flex;flex-wrap:wrap;gap:.35rem .6rem;align-items:center;padding:.45rem 0;border-bottom:1px solid #eee}
+.wz-h{display:flex;flex-direction:column;min-width:8rem;flex:1}
+.wz-cols select{flex:1;min-width:11rem}.wz-cols input{flex:1;min-width:7rem}
+/* Prepara orario */
+.btns.col{flex-direction:column;align-items:stretch;max-width:22rem}
+.bz-sub{display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.6rem}
+.bz-sub button{font:inherit;border:1px solid var(--line,#e4dcf3);background:#fff;border-radius:999px;padding:.35rem .8rem;cursor:pointer}
+.bz-sub button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.bz-n{display:inline-block;min-width:1.3rem;padding:0 .3rem;border-radius:999px;background:#f2c94c;color:#3a2a00;font-size:.75rem;text-align:center}
+.bz-n.err{background:#c62828;color:#fff}
+.bz-chips{display:flex;flex-wrap:wrap;gap:.3rem;align-items:center;margin:.3rem 0}
+.chipb{font:inherit;font-size:.85rem;border:1px solid var(--line,#e4dcf3);background:#fff;border-radius:8px;padding:.3rem .6rem;cursor:pointer}
+.chipb.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.bz-ev{max-width:14rem}
+.bz-blk h3{margin:0 0 .4rem}
+.bz-wrap{overflow:auto;max-height:75vh;-webkit-overflow-scrolling:touch;border:1px solid var(--line,#e4dcf3);border-radius:10px}
+.bz-t{border-collapse:separate;border-spacing:0;font-size:.78rem;min-width:100%}
+.bz-t th{position:sticky;top:0;background:#f6f3fc;z-index:2;padding:.3rem .35rem;font-weight:700;white-space:nowrap;border-bottom:1px solid #ddd}
+.bz-t th.srv{color:#7a6e99;font-weight:600}
+.bz-t th.bz-ora{left:0;z-index:3;font-variant-numeric:tabular-nums}
+.bz-t tbody th.bz-ora{top:auto;z-index:1;background:#fbfaff;color:#555;vertical-align:top}
+.bz-t td{border-right:1px solid #eee;border-bottom:1px solid #eee;padding:0;vertical-align:top;min-width:5.6rem}
+.bz-t td button{display:block;width:100%;height:100%;min-height:2.1rem;text-align:left;font:inherit;background:none;border:0;padding:.25rem .35rem;cursor:pointer;color:inherit}
+.bz-c.vuota button{color:#c9c2d9;text-align:center}
+.bz-c.vuota button:hover{background:#f6f3fc;color:var(--accent)}
+.bz-c:not(.vuota){background:#fff}
+.bz-c.mensa{background:#fff7c2}
+.bz-c.avv{box-shadow:inset 3px 0 0 #e0a800}
+.bz-c.err{box-shadow:inset 0 0 0 2px #c62828;background:#fff1f1}
+.bz-c.sel{box-shadow:inset 0 0 0 3px var(--accent)}
+.bz-c.evid{background:#e6dcfb}
+.bz-n1{display:block;font-weight:600;line-height:1.2}.bz-n1 small{font-weight:400;color:#7a6e99}
+.bz-n2{display:block;color:#6d6585;font-size:.72rem;line-height:1.2;margin-top:.1rem}
+.bz-ed{position:sticky;bottom:0;z-index:20;margin:.5rem 0;background:#fff;border:2px solid var(--accent);border-radius:14px;padding:.7rem .8rem;box-shadow:0 -6px 24px rgba(40,20,80,.15);max-height:70vh;overflow:auto}
+.bz-ed-h{display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.3rem}
+.bz-docs{list-style:none;padding:0;margin:.3rem 0}
+.bz-docs li{display:flex;flex-wrap:wrap;gap:.3rem .7rem;align-items:center;padding:.3rem 0;border-bottom:1px solid #f0edf6}
+.bz-row{display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:center;margin:.5rem 0}
+.bz-row label{display:flex;gap:.3rem;align-items:center}
+.bz-doc-h{display:flex;flex-wrap:wrap;gap:.3rem 1rem;align-items:center;justify-content:space-between}
+.bz-num{width:4.2rem}
+.bz-vinc{list-style:none;padding:0;margin:.4rem 0}
+.bz-vinc li{display:flex;flex-wrap:wrap;gap:.3rem .5rem;align-items:center;padding:.3rem 0;border-bottom:1px solid #f0edf6}
+.bz-vt{font-weight:700;min-width:9rem}
+.bz-prob{list-style:none;padding:0;margin:.3rem 0}
+.bz-prob li{padding:.25rem 0;border-bottom:1px solid #f0edf6}
+.bz-prob li.err button{color:#b71c1c}
+.err-t{color:#b71c1c}
+.bad-t{color:#b71c1c}
+.bz-cols{list-style:none;padding:0;margin:.3rem 0}
+.bz-cols li{display:flex;gap:.4rem;align-items:center;padding:.2rem 0}
+.bz-cols input{flex:1;min-width:6rem}
+.bz-fasce{display:flex;flex-wrap:wrap;gap:1rem}.bz-fasce label{display:flex;flex-direction:column;font-weight:700}.bz-fasce textarea{width:9rem;font-variant-numeric:tabular-nums}
+@media (min-width:1000px){.main.wide{max-width:min(100%,1800px)}}
+.bz-vinc li input,.bz-vinc li select,.bz-doc-h input,.bz-row select{width:auto;min-width:0}
+.bz-vinc li input.grow{flex:1;min-width:10rem}
+.bz-num{width:4.6rem!important}
+.bz-vinc li select{max-width:12rem}
 .titolo{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:1.4rem}
 .sezioni{max-width:100%;overflow-x:auto;flex-wrap:nowrap}
 .sezioni button{white-space:nowrap}
@@ -1931,6 +2004,7 @@ function vImp(){
   ${ui.conferma==='anno'?`<div class="form"><label class="tog"><input type="checkbox" id="tieniAl"><span>Tieni gli alunni nelle stesse classi (con i loro PDP/PEI)</span></label>
   <p class="warn-t">${CLOUD.key?'Prima scarico un backup cifrato dell\'anno che chiudi.':'Prima scarica un backup: dopo i dati dell\'anno non ci sono più.'}</p>
   <div class="btns"><button class="btn bad" data-act="nuovoAnno">Archivia e inizia il nuovo anno</button><button class="btn ghost" data-act="conf" data-v="">Annulla</button></div></div>`:'<button class="btn" data-act="conf" data-v="anno">Inizia il nuovo anno…</button>'}</section>`;
+  h+=`<section class="block"><h2>Segnala un problema</h2><p class="muted">Se qualcosa non funziona, scrivi cosa è successo: l'app aggiunge da sola versione, telefono e ultimi errori, così si capisce subito dove intervenire. La mandi con WhatsApp, Mail o Messaggi.</p><div class="btns"><button class="btn" data-seg>Segnala un problema</button></div></section>`;
   return h;
 }
 function vCopia(){return `<div class="sheet" role="dialog" aria-label="Copia testo"><div class="sheet-in"><p>Seleziona il testo e copialo.</p><textarea id="copyArea" rows="8" readonly>${esc(ui.copia)}</textarea><div class="btns"><button class="btn primary" data-act="closeCopy">Fatto</button></div></div></div>`}
@@ -2152,6 +2226,71 @@ document.addEventListener('input',e=>{
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 cloudInit();
 render();
+
+var SEG_APP={id:"classi",nome:"Classi",v:"v14",toast:false};
+/* ---------- Segnala un problema ----------
+   Registro sul dispositivo (ultimi 120 eventi): errori, avvisi mostrati, schede aperte e pulsanti toccati.
+   Solo NOMI delle azioni, mai i valori scritti (niente nomi di alunni, voti, testi).
+   La segnalazione si manda con il menu Condividi del telefono, per email o si copia: nessun dato va online da solo. */
+(function(){
+  var A=window.SEG_APP||{id:'app',nome:'App',v:''};var K='makeiteasy.log.'+A.id,KM='makeiteasy.segnala.email';
+  var L=[];try{L=JSON.parse(localStorage.getItem(K)||'[]')}catch(e){L=[]}
+  var ultimo=0,timer=null;
+  function salva(){clearTimeout(timer);timer=setTimeout(function(){try{localStorage.setItem(K,JSON.stringify(L.slice(-120)))}catch(e){}},300)}
+  function add(k,x){L.push({t:Date.now(),k:k,x:String(x==null?'':x).slice(0,240)});if(L.length>160)L=L.slice(-120);salva()}
+  var sicuro=function(v){return v&&/^[A-Za-z0-9_.:-]{1,24}$/.test(v)?v:''};
+  document.addEventListener('click',function(e){var t=e.target;if(!t||!t.closest)return;var s=t.closest('[data-seg]');if(s){e.preventDefault();e.stopPropagation();apri();return}
+    var b=t.closest('[data-act]');if(b){var v=sicuro(b.dataset.v);add('tocco',b.dataset.act+(v&&b.dataset.act==='tab'?' → '+v:''))}},true);
+  document.addEventListener('change',function(e){var t=e.target;if(t&&t.dataset&&(t.dataset.chg||t.id))add('campo',t.dataset.chg||t.id)},true);
+  window.addEventListener('error',function(e){if(!e.message)return;add('ERRORE',e.message+' ('+String(e.filename||'').split('/').pop()+':'+e.lineno+')');avviso()});
+  window.addEventListener('unhandledrejection',function(e){var r=e.reason;var m=r&&(r.code||r.message)?(r.code?r.code+': ':'')+(r.message||''):String(r);add('ERRORE',m);avviso()});
+  var ce=console.error;console.error=function(){try{add('console',[].map.call(arguments,function(a){return a&&a.message?a.message:typeof a==='object'?'[oggetto]':String(a)}).join(' '))}catch(e){}return ce.apply(console,arguments)};
+  window.addEventListener('load',function(){add('apertura',A.nome+' '+A.v+(navigator.onLine?'':' (offline)'));
+    if(A.toast&&typeof window.toast==='function'){var o=window.toast;window.toast=function(m){add('messaggio',m);return o.apply(this,arguments)}}});
+  window.addEventListener('online',function(){add('rete','tornata online')});window.addEventListener('offline',function(){add('rete','offline')});
+  var css=document.createElement('style');css.textContent=
+    '.seg-bar{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:9998;display:flex;gap:.6rem;align-items:center;justify-content:space-between;background:#2b2240;color:#fff;border-radius:14px;padding:.6rem .8rem;box-shadow:0 8px 30px rgba(0,0,0,.25);font:15px/1.3 system-ui,sans-serif;max-width:560px;margin:0 auto}'+
+    '.seg-bar button{font:inherit;border:0;border-radius:999px;padding:.4rem .8rem;cursor:pointer}.seg-bar .seg-go{background:#fff;color:#2b2240;font-weight:700}.seg-bar .seg-x{background:transparent;color:#fff}'+
+    '.seg-ov{position:fixed;inset:0;z-index:9999;background:rgba(20,10,40,.45);display:flex;align-items:flex-end;justify-content:center}'+
+    '.seg-box{background:#fff;color:#222;width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:1rem 1rem calc(1rem + env(safe-area-inset-bottom,0px));font:16px/1.4 system-ui,sans-serif}'+
+    '@media(min-width:600px){.seg-ov{align-items:center}.seg-box{border-radius:18px}}'+
+    '.seg-box h2{margin:0 0 .3rem;font-size:1.2rem}.seg-box p{margin:.3rem 0}.seg-box textarea,.seg-box input{width:100%;box-sizing:border-box;font:inherit;border:1px solid #ccc;border-radius:10px;padding:.5rem}'+
+    '.seg-box textarea{min-height:7rem}.seg-btns{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.7rem}.seg-btns button{font:inherit;border:1px solid #ccc;background:#fff;border-radius:999px;padding:.5rem 1rem;cursor:pointer}'+
+    '.seg-btns .seg-p{background:var(--accent,#9a7bd6);border-color:var(--accent,#9a7bd6);color:#fff;font-weight:700}.seg-sm{font-size:.85rem;color:#666}.seg-log{font:12px/1.35 ui-monospace,Menlo,monospace;background:#f6f4fa;border-radius:10px;padding:.5rem;max-height:10rem;overflow:auto;white-space:pre-wrap}';
+  document.head.appendChild(css);
+  var bar=null;
+  function avviso(){var now=Date.now();if(now-ultimo<60000||document.querySelector('.seg-ov'))return;ultimo=now;if(bar)bar.remove();
+    bar=document.createElement('div');bar.className='seg-bar';bar.setAttribute('role','alert');bar.innerHTML='<span>Qualcosa non ha funzionato.</span><span><button class="seg-go">Segnala</button><button class="seg-x" aria-label="Chiudi">✕</button></span>';
+    bar.querySelector('.seg-go').onclick=function(){bar.remove();bar=null;apri()};bar.querySelector('.seg-x').onclick=function(){bar.remove();bar=null};document.body.appendChild(bar);
+    setTimeout(function(){if(bar){bar.remove();bar=null}},15000)}
+  var hh=function(t){var d=new Date(t);return d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('it-IT')};
+  function contesto(){var c=[];try{if(typeof ui!=='undefined'&&ui.tab)c.push('scheda: '+ui.tab)}catch(e){}try{if(typeof CLOUD!=='undefined'){c.push('sincronizzazione: '+(CLOUD.stato||'—')+(CLOUD.err?' ('+CLOUD.err+')':''));if(CLOUD.ruolo)c.push('ruolo: '+CLOUD.ruolo)}}catch(e){}
+    var ua=navigator.userAgent;var dev=/iPhone/.test(ua)?'iPhone':/iPad/.test(ua)?'iPad':/Macintosh/.test(ua)?'Mac':/Android/.test(ua)?'Android':/Windows/.test(ua)?'Windows':'altro';
+    var ios=(ua.match(/OS (\d+[._]\d+)/)||[])[1];var br=/CriOS|Chrome/.test(ua)?'Chrome':/FxiOS|Firefox/.test(ua)?'Firefox':/Safari/.test(ua)?'Safari':'browser';
+    var st=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone?'app sulla Home':'nel browser';
+    c.push('dispositivo: '+dev+(ios?' iOS '+ios.replace('_','.'):'')+', '+br+', '+st+', schermo '+screen.width+'×'+screen.height+(navigator.onLine?'':' — OFFLINE'));return c}
+  function testo(desc){var err=L.filter(function(x){return x.k==='ERRORE'||x.k==='console'}).slice(-15),az=L.slice(-40);
+    return 'Segnalazione Make it easy – '+A.nome+' '+A.v+'\n'+hh(Date.now())+'\n\nCosa è successo:\n'+(desc||'(non scritto)')+'\n\n'+contesto().join('\n')+
+      '\n\nUltimi errori:\n'+(err.length?err.map(function(x){return hh(x.t)+'  '+x.x}).join('\n'):'nessuno')+
+      '\n\nUltime azioni:\n'+az.map(function(x){return hh(x.t).slice(6)+'  '+x.k+(x.x?': '+x.x:'')}).join('\n')}
+  function apri(){var ov=document.createElement('div');ov.className='seg-ov';var mail='';try{mail=localStorage.getItem(KM)||''}catch(e){}
+    ov.innerHTML='<div class="seg-box" role="dialog" aria-label="Segnala un problema"><h2>Segnala un problema</h2><p class="seg-sm">Scrivi cosa stavi facendo e cosa è andato storto. Se puoi, fai anche uno screenshot e mandalo insieme.</p>'+
+      '<textarea id="segDesc" placeholder="Es. ho toccato Assegna per la 2A delle 9 e non è successo niente"></textarea>'+
+      '<details><summary class="seg-sm">Cosa viene aggiunto in automatico</summary><p class="seg-sm">Versione dell\'app, tipo di telefono, scheda aperta, stato della sincronizzazione, ultimi errori e ultime azioni (solo i nomi dei pulsanti, mai quello che hai scritto).</p><div class="seg-log"></div></details>'+
+      '<label class="seg-sm" for="segMail">Email a cui mandarla (facoltativa, viene ricordata)</label><input id="segMail" type="email" autocomplete="email" value="'+mail.replace(/"/g,'&quot;')+'">'+
+      '<div class="seg-btns">'+(navigator.share?'<button class="seg-p" data-a="share">Invia…</button>':'')+'<button class="'+(navigator.share?'':'seg-p')+'" data-a="mail">Manda per email</button><button data-a="copia">Copia il testo</button><button data-a="chiudi">Chiudi</button></div><p class="seg-sm seg-ok" hidden></p></div>';
+    document.body.appendChild(ov);var desc=ov.querySelector('#segDesc');desc.focus();
+    ov.querySelector('.seg-log').textContent=testo('').split('\n').slice(4).join('\n');
+    var ok=function(m){var p=ov.querySelector('.seg-ok');p.textContent=m;p.hidden=false};
+    ov.addEventListener('click',function(e){if(e.target===ov){ov.remove();return}var b=e.target.closest('[data-a]');if(!b)return;var a=b.dataset.a;var t=testo(desc.value.trim());
+      var m=ov.querySelector('#segMail').value.trim();try{localStorage.setItem(KM,m)}catch(_){}
+      if(a==='chiudi'){ov.remove();return}
+      if(a==='share'){navigator.share({title:'Segnalazione '+A.nome,text:t}).then(function(){add('segnalazione','inviata');ok('Inviata. Grazie!')}).catch(function(){})}
+      if(a==='mail'){var body=t.length>1800?t.slice(0,1800)+'\n…(testo tagliato: usa "Copia il testo" per averlo tutto)':t;location.href='mailto:'+encodeURIComponent(m)+'?subject='+encodeURIComponent('Segnalazione '+A.nome+' '+A.v)+'&body='+encodeURIComponent(body);add('segnalazione','email');ok('Si apre la tua app di posta.')}
+      if(a==='copia'){var fatto=function(){ok('Testo copiato: incollalo in un messaggio.');add('segnalazione','copiata')};
+        if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(fatto).catch(function(){desc.value=t;desc.select();ok('Seleziona tutto e copia.')});else{desc.value=t;desc.select();try{document.execCommand('copy');fatto()}catch(_){}}}})}
+  window.SEG={add:add,apri:apri,testo:testo,log:function(){return L.slice()}};
+})();
 
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
